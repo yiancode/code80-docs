@@ -1,20 +1,322 @@
+/* ============================================
+   Code80 Docs - Tech Gradient Theme
+   Color system aligned with yi-code product site
+   ============================================ */
+
+/* ------------------------------------------
+   Step 1: Color System - Claude Orange
+   Matches yi-code: primary #d97757
+   ------------------------------------------ */
 :root {
   --vp-c-brand-1: #d97757;
-  --vp-c-brand-2: #c4613f;
+  --vp-c-brand-2: #c45a3a;
   --vp-c-brand-3: #b04e2e;
   --vp-c-brand-soft: rgba(217, 119, 87, 0.14);
+
+  /* Gradient palette - warm tech tones */
+  --c80-amber: #f59e0b;
+  --c80-orange: #d97757;
+  --c80-deep: #c45a3a;
+  --c80-light: #f18a5e;
 }
 
 .dark {
   --vp-c-brand-1: #e0926e;
   --vp-c-brand-2: #d97757;
-  --vp-c-brand-3: #c4613f;
+  --vp-c-brand-3: #c45a3a;
   --vp-c-brand-soft: rgba(217, 119, 87, 0.16);
 }
 
+/* ------------------------------------------
+   Step 2: Hero Section
+   ------------------------------------------ */
+
+/* Hero title gradient text */
 :root {
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #d97757 30%, #e8a88c);
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, #d97757aa 50%, #e8a88caa 50%);
+  --vp-home-hero-name-background: linear-gradient(
+    135deg,
+    var(--c80-amber) 0%,
+    var(--c80-orange) 50%,
+    var(--c80-deep) 100%
+  );
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    var(--c80-orange) 50%,
+    var(--c80-amber) 50%
+  );
   --vp-home-hero-image-filter: blur(44px);
+}
+
+/* Hero background glow */
+.VPHero {
+  position: relative;
+  overflow: hidden;
+}
+
+.VPHero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 400px;
+  transform: translate(-50%, -60%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(217, 119, 87, 0.12) 0%,
+    rgba(245, 158, 11, 0.06) 40%,
+    transparent 70%
+  );
+  animation: heroGlow 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .VPHero::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(217, 119, 87, 0.18) 0%,
+    rgba(245, 158, 11, 0.1) 40%,
+    transparent 70%
+  );
+}
+
+@keyframes heroGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translate(-50%, -60%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1.15);
+  }
+}
+
+/* Hero content z-index */
+.VPHero .tagline {
+  position: relative;
+  z-index: 1;
+}
+
+.VPHero .name {
+  position: relative;
+  z-index: 1;
+}
+
+.VPHero .text {
+  position: relative;
+  z-index: 1;
+}
+
+.VPHero .actions {
+  position: relative;
+  z-index: 1;
+}
+
+.VPHero .image {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------
+   Step 3: Features Cards
+   ------------------------------------------ */
+
+/* Glass morphism card */
+.VPFeature {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(217, 119, 87, 0.08) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .VPFeature {
+  background: rgba(30, 30, 40, 0.6) !important;
+  border: 1px solid rgba(217, 119, 87, 0.1) !important;
+}
+
+/* Gradient border on hover via pseudo-element */
+.VPFeature::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--c80-amber),
+    var(--c80-orange),
+    var(--c80-deep)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.VPFeature:hover::before {
+  opacity: 1;
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 32px rgba(217, 119, 87, 0.1),
+    0 2px 6px rgba(217, 119, 87, 0.06);
+  border-color: transparent !important;
+}
+
+.dark .VPFeature:hover {
+  box-shadow:
+    0 12px 32px rgba(217, 119, 87, 0.15),
+    0 2px 6px rgba(217, 119, 87, 0.1);
+}
+
+/* Feature icon hover effect */
+.VPFeature .icon {
+  transition: transform 0.3s ease;
+}
+
+.VPFeature:hover .icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* ------------------------------------------
+   Step 4: Buttons & Atmosphere
+   ------------------------------------------ */
+
+/* Brand button - gradient (matches yi-code gradient-primary) */
+.VPButton.brand {
+  background: linear-gradient(
+    135deg,
+    var(--c80-orange) 0%,
+    var(--c80-deep) 100%
+  ) !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 16px rgba(217, 119, 87, 0.25);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.VPButton.brand:hover {
+  box-shadow: 0 6px 24px rgba(217, 119, 87, 0.4);
+  transform: translateY(-1px);
+}
+
+.VPButton.brand:active {
+  transform: translateY(0);
+}
+
+/* Alt button - border glow */
+.VPButton.alt {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.VPButton.alt:hover {
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: 0 0 12px rgba(217, 119, 87, 0.15);
+}
+
+/* Page-level subtle background glow */
+.VPHome {
+  position: relative;
+}
+
+.VPHome::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 1200px;
+  height: 600px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(217, 119, 87, 0.04) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .VPHome::before {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(217, 119, 87, 0.06) 0%,
+    transparent 60%
+  );
+}
+
+/* ------------------------------------------
+   Step 5: Responsive & Accessibility
+   ------------------------------------------ */
+
+/* Mobile: simplify effects */
+@media (max-width: 768px) {
+  .VPHero::before {
+    animation: none;
+    opacity: 0.5;
+    width: 300px;
+    height: 200px;
+  }
+
+  .VPFeature:hover {
+    transform: none;
+  }
+
+  .VPFeature::before {
+    display: none;
+  }
+}
+
+/* Reduced motion: disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  .VPHero::before {
+    animation: none;
+  }
+
+  .VPFeature,
+  .VPFeature .icon,
+  .VPButton.brand,
+  .VPButton.alt {
+    transition: none;
+  }
+
+  .VPFeature:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .VPFeature {
+    border-width: 2px !important;
+    border-color: var(--vp-c-brand-1) !important;
+  }
+
+  .VPFeature::before {
+    display: none;
+  }
+}
+
+/* Backdrop-filter fallback */
+@supports not (backdrop-filter: blur(10px)) {
+  .VPFeature {
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .dark .VPFeature {
+    background: rgba(30, 30, 40, 0.9) !important;
+  }
 }
