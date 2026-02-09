@@ -1,3 +1,7 @@
+---
+description: Codex CLI 常见问题与解决方案，包括 Node.js 版本要求、bubblewrap 报错和连接问题排查
+---
+
 # Codex CLI 常见问题
 
 ## 安装问题

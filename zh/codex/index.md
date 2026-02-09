@@ -1,3 +1,7 @@
+---
+description: Codex CLI 快速开始指南，3 步通过 Code80 平台配置 OpenAI AI 编程助手
+---
+
 # Codex CLI
 
 OpenAI 官方 AI 编程助手命令行工具。

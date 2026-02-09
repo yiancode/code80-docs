@@ -1,3 +1,7 @@
+---
+description: Claude Code 快速开始指南，3 步通过 Code80 平台配置 Anthropic AI 编程助手
+---
+
 # Claude Code
 
 Anthropic 官方 AI 编程助手命令行工具。

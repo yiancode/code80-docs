@@ -1,3 +1,7 @@
+---
+description: Codex CLI 安装教程，覆盖 macOS、Linux、Windows 全平台，Node.js 22+ 环境要求与 bubblewrap 配置
+---
+
 # Codex CLI 安装详解
 
 Codex CLI 需要 Node.js 22+ 环境。以下是各平台的安装步骤。

@@ -1,3 +1,7 @@
+---
+description: Gemini CLI 常见问题与解决方案，包括 Node.js 版本要求、API 连接和配置问题排查
+---
+
 # Gemini CLI 常见问题
 
 ## 安装问题

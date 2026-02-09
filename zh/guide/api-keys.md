@@ -1,3 +1,7 @@
+---
+description: Code80 平台 API Key 创建、管理与安全使用指南，一个密钥接入多个 AI 编程工具
+---
+
 # API Key 管理
 
 ## 什么是 API Key

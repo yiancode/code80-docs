@@ -1,3 +1,7 @@
+---
+description: Claude Code 安装教程，覆盖 macOS、Linux、Windows 全平台，Node.js 环境配置与常见安装问题解决
+---
+
 # Claude Code 安装详解
 
 Claude Code 需要 Node.js 18+ 环境。以下是各平台的安装步骤。

@@ -1,3 +1,7 @@
+---
+description: Claude Code 配置文件详解，包括 API 地址、密钥设置、模型选择和自定义参数配置
+---
+
 # Claude Code 配置详解
 
 ## 配置文件位置

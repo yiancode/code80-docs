@@ -1,3 +1,7 @@
+---
+description: Gemini CLI 配置详解，包括 .env 环境变量、settings.json 设置和 API 地址配置
+---
+
 # Gemini CLI 配置详解
 
 ## 配置文件位置

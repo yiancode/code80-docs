@@ -2,8 +2,8 @@
 layout: home
 hero:
   name: Code80
-  text: AI 编程助手配置平台
-  tagline: 一个密钥，畅用 Claude Code、Codex CLI、Gemini CLI
+  text: AI 编程巴士
+  tagline: Claude Code、Codex CLI、Gemini CLI 配置教程、使用技巧与插件玩法
   actions:
     - theme: brand
       text: Claude Code
@@ -43,7 +43,7 @@ features:
     details: 分平台、分工具的安装配置教程，从零开始到高效使用
   - icon:
       src: /icons/globe.svg
-      alt: 中英双语
-    title: 中英双语
-    details: 文档支持中文和英文，面向全球开发者
+      alt: 持续更新
+    title: 持续更新
+    details: 文档与产品同步迭代，第一时间提供最新配置指南和使用技巧
 ---

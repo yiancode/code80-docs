@@ -1,3 +1,7 @@
+---
+description: Gemini CLI 安装教程，覆盖 macOS、Linux、Windows 全平台，Node.js 20+ 环境配置
+---
+
 # Gemini CLI 安装详解
 
 Gemini CLI 需要 Node.js 20+ 环境。以下是各平台的安装步骤。

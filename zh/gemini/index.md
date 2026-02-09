@@ -1,3 +1,7 @@
+---
+description: Gemini CLI 快速开始指南，3 步通过 Code80 平台配置 Google AI 编程助手
+---
+
 # Gemini CLI
 
 Google 官方 AI 编程助手命令行工具。

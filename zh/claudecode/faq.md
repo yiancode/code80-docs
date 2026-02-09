@@ -1,3 +1,7 @@
+---
+description: Claude Code 常见问题与解决方案，包括安装报错、连接失败、配置问题的排查方法
+---
+
 # Claude Code 常见问题
 
 ## 安装问题

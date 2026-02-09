@@ -1,3 +1,7 @@
+---
+description: Claude Code 使用技巧汇总，涵盖高效操作、快捷命令、项目管理和代码生成最佳实践
+---
+
 # Claude Code 使用技巧
 
 ## 基础操作

@@ -1,3 +1,7 @@
+---
+description: Codex CLI 配置详解，包括 config.toml 主配置、auth.json 认证文件和 API 地址设置
+---
+
 # Codex CLI 配置详解
 
 ## 配置文件位置

@@ -1,3 +1,7 @@
+---
+description: Gemini CLI 使用技巧，涵盖交互操作、代码生成、项目分析和高效工作流
+---
+
 # Gemini CLI 使用技巧
 
 ## 基础操作

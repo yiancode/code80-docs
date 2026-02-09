@@ -1,3 +1,7 @@
+---
+description: Claude Code、Codex CLI、Gemini CLI 三大 AI 编程工具功能对比，帮你选择最适合的工具
+---
+
 # 工具功能对比
 
 ## 总览
