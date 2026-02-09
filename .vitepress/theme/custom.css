@@ -1,0 +1,20 @@
+:root {
+  --vp-c-brand-1: #d97757;
+  --vp-c-brand-2: #c4613f;
+  --vp-c-brand-3: #b04e2e;
+  --vp-c-brand-soft: rgba(217, 119, 87, 0.14);
+}
+
+.dark {
+  --vp-c-brand-1: #e0926e;
+  --vp-c-brand-2: #d97757;
+  --vp-c-brand-3: #c4613f;
+  --vp-c-brand-soft: rgba(217, 119, 87, 0.16);
+}
+
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, #d97757 30%, #e8a88c);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, #d97757aa 50%, #e8a88caa 50%);
+  --vp-home-hero-image-filter: blur(44px);
+}

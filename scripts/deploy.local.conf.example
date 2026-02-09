@@ -1,0 +1,7 @@
+# 部署配置（复制为 deploy.local.conf 并填写实际值）
+# deploy.local.conf 不会提交到 git
+
+REMOTE_HOST="YOUR_SERVER_IP"
+REMOTE_USER="root"
+REMOTE_DIR="/www/wwwroot/docs.ai80.vip"
+# SSH_KEY="~/.ssh/id_rsa"  # 可选，指定 SSH 密钥
