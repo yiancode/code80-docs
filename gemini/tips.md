@@ -42,4 +42,4 @@ Gemini CLI 内置 Google Search 能力，可以实时搜索最新的技术文档
 
 ## 与其他工具对比
 
-查看 [工具功能对比](/zh/guide/comparison) 了解 Gemini CLI 与 Claude Code、Codex CLI 的差异。
+查看 [工具功能对比](/guide/comparison) 了解 Gemini CLI 与 Claude Code、Codex CLI 的差异。

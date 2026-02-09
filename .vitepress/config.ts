@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitepress'
-import { zhConfig } from './locales/zh'
 
 const site = 'https://docs.ai80.vip'
 const ogImage = `${site}/logo.png`
@@ -27,17 +26,113 @@ export default defineConfig({
     ['meta', { name: 'keywords', content: 'Code80,AI编程巴士,Claude Code,Codex CLI,Gemini CLI,AI编程助手,API网关,AI编程工具配置' }]
   ],
 
-  locales: {
-    zh: {
-      label: '简体中文',
-      lang: 'zh-CN',
-      link: '/zh/',
-      ...zhConfig
-    }
-  },
-
   themeConfig: {
     logo: '/logo.png',
+    nav: [
+      { text: 'Claude Code', link: '/claudecode/' },
+      { text: 'Codex CLI', link: '/codex/' },
+      { text: 'Gemini CLI', link: '/gemini/' },
+      {
+        text: '使用指南',
+        items: [
+          { text: 'API Key 管理', link: '/guide/api-keys' },
+          { text: '计费与订阅', link: '/guide/billing' },
+          { text: '工具功能对比', link: '/guide/comparison' },
+          { text: '常见问题', link: '/guide/faq' }
+        ]
+      },
+      {
+        text: '关于',
+        items: [
+          { text: '服务条款', link: '/guide/terms' },
+          { text: '隐私政策', link: '/guide/privacy' }
+        ]
+      }
+    ],
+    sidebar: {
+      '/claudecode/': [
+        {
+          text: 'Claude Code',
+          items: [
+            { text: '概述与快速开始', link: '/claudecode/' },
+            { text: '安装详解', link: '/claudecode/install' },
+            { text: '配置详解', link: '/claudecode/config' },
+            { text: '使用技巧', link: '/claudecode/tips' },
+            { text: '常见问题', link: '/claudecode/faq' }
+          ]
+        },
+        {
+          text: '其他工具',
+          items: [
+            { text: 'Codex CLI', link: '/codex/' },
+            { text: 'Gemini CLI', link: '/gemini/' }
+          ]
+        }
+      ],
+      '/codex/': [
+        {
+          text: 'Codex CLI',
+          items: [
+            { text: '概述与快速开始', link: '/codex/' },
+            { text: '安装详解', link: '/codex/install' },
+            { text: '配置详解', link: '/codex/config' },
+            { text: '使用技巧', link: '/codex/tips' },
+            { text: '常见问题', link: '/codex/faq' }
+          ]
+        },
+        {
+          text: '其他工具',
+          items: [
+            { text: 'Claude Code', link: '/claudecode/' },
+            { text: 'Gemini CLI', link: '/gemini/' }
+          ]
+        }
+      ],
+      '/gemini/': [
+        {
+          text: 'Gemini CLI',
+          items: [
+            { text: '概述与快速开始', link: '/gemini/' },
+            { text: '安装详解', link: '/gemini/install' },
+            { text: '配置详解', link: '/gemini/config' },
+            { text: '使用技巧', link: '/gemini/tips' },
+            { text: '常见问题', link: '/gemini/faq' }
+          ]
+        },
+        {
+          text: '其他工具',
+          items: [
+            { text: 'Claude Code', link: '/claudecode/' },
+            { text: 'Codex CLI', link: '/codex/' }
+          ]
+        }
+      ],
+      '/guide/': [
+        {
+          text: '使用指南',
+          items: [
+            { text: 'API Key 管理', link: '/guide/api-keys' },
+            { text: '计费与订阅', link: '/guide/billing' },
+            { text: '工具功能对比', link: '/guide/comparison' },
+            { text: '常见问题', link: '/guide/faq' }
+          ]
+        },
+        {
+          text: '关于',
+          items: [
+            { text: '服务条款', link: '/guide/terms' },
+            { text: '隐私政策', link: '/guide/privacy' }
+          ]
+        }
+      ]
+    },
+    outline: { label: '页面导航' },
+    lastUpdated: { text: '最后更新于' },
+    docFooter: { prev: '上一页', next: '下一页' },
+    editLink: {
+      pattern: 'https://github.com/yiancode/code80-docs/edit/main/:path',
+      text: '在 GitHub 上编辑此页'
+    },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/yiancode/code80-docs' }
     ],
