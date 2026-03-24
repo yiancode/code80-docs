@@ -36,7 +36,7 @@ model_verbosity = "high"
 
 [model_providers.code80]
 name = "code80"
-base_url = "https://your-code80-domain.com/v1"
+base_url = "https://code.ai80.vip/v1"
 wire_api = "responses"
 requires_openai_auth = true
 ```
@@ -49,7 +49,7 @@ requires_openai_auth = true
 }
 ```
 
-> 将 `your-api-key` 替换为你在 Code80 平台获取的 API Key，`your-code80-domain.com` 替换为你的 Code80 服务地址。
+> 将 `your-api-key` 替换为你在 Code80 平台获取的 API Key。
 
 ### 3. 开始使用
 
@@ -71,5 +71,6 @@ codex
 
 - [安装详解](./install) - 分平台的详细安装步骤
 - [配置详解](./config) - 完整的配置文件说明
+- [快捷键速查](./shortcuts) - 常用快捷键与高频交互命令
 - [使用技巧](./tips) - 高级用法和效率提升
 - [常见问题](./faq) - 遇到问题看这里

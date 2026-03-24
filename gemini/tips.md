@@ -13,6 +13,12 @@ cd your-project
 gemini
 ```
 
+## 快捷键与高频交互
+
+Gemini CLI 的快捷键和常用交互操作已单独整理成速查页：
+
+- [Gemini CLI 快捷键](./shortcuts)
+
 ## Gemini CLI 特色功能
 
 ### 超大上下文窗口

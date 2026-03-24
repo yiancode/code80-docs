@@ -37,6 +37,7 @@ export default defineConfig({
         items: [
           { text: 'API Key 管理', link: '/guide/api-keys' },
           { text: '计费与订阅', link: '/guide/billing' },
+          { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
           { text: '工具功能对比', link: '/guide/comparison' },
           { text: '常见问题', link: '/guide/faq' }
         ]
@@ -57,6 +58,7 @@ export default defineConfig({
             { text: '概述与快速开始', link: '/claudecode/' },
             { text: '安装详解', link: '/claudecode/install' },
             { text: '配置详解', link: '/claudecode/config' },
+            { text: '快捷键速查', link: '/claudecode/shortcuts' },
             { text: '使用技巧', link: '/claudecode/tips' },
             { text: '常见问题', link: '/claudecode/faq' }
           ]
@@ -76,6 +78,7 @@ export default defineConfig({
             { text: '概述与快速开始', link: '/codex/' },
             { text: '安装详解', link: '/codex/install' },
             { text: '配置详解', link: '/codex/config' },
+            { text: '快捷键速查', link: '/codex/shortcuts' },
             { text: '使用技巧', link: '/codex/tips' },
             { text: '常见问题', link: '/codex/faq' }
           ]
@@ -95,6 +98,7 @@ export default defineConfig({
             { text: '概述与快速开始', link: '/gemini/' },
             { text: '安装详解', link: '/gemini/install' },
             { text: '配置详解', link: '/gemini/config' },
+            { text: '快捷键速查', link: '/gemini/shortcuts' },
             { text: '使用技巧', link: '/gemini/tips' },
             { text: '常见问题', link: '/gemini/faq' }
           ]
@@ -113,6 +117,7 @@ export default defineConfig({
           items: [
             { text: 'API Key 管理', link: '/guide/api-keys' },
             { text: '计费与订阅', link: '/guide/billing' },
+            { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
             { text: '工具功能对比', link: '/guide/comparison' },
             { text: '常见问题', link: '/guide/faq' }
           ]

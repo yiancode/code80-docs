@@ -36,7 +36,7 @@ model_verbosity = "high"
 
 [model_providers.code80]
 name = "code80"
-base_url = "https://your-code80-domain.com/v1"
+base_url = "https://code.ai80.vip/v1"
 wire_api = "responses"
 requires_openai_auth = true
 ```

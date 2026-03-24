@@ -16,7 +16,7 @@ Gemini CLI 需要两个配置文件：
 ## 环境变量文件 .env
 
 ```bash
-GOOGLE_GEMINI_BASE_URL=https://your-code80-domain.com/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1beta
 GEMINI_API_KEY=your-api-key
 GEMINI_MODEL=gemini-2.5-pro
 ```

@@ -19,7 +19,7 @@ Claude Code 使用 JSON 格式的配置文件：
 {
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "your-api-key",
-    "ANTHROPIC_BASE_URL": "https://your-code80-domain.com"
+    "ANTHROPIC_BASE_URL": "https://code.ai80.vip"
   }
 }
 ```

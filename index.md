@@ -14,6 +14,9 @@ hero:
     - theme: alt
       text: Gemini CLI
       link: /gemini/
+    - theme: alt
+      text: CLI 快捷键
+      link: /guide/cli-shortcuts
 
 features:
   - icon:

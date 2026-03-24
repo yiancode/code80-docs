@@ -26,6 +26,12 @@ claude
 | `/exit` | 退出 Claude Code |
 | `/compact` | 压缩对话历史，节省上下文 |
 
+## 快捷键与高频交互
+
+Claude Code 的快捷键和 slash commands 已单独整理成速查页：
+
+- [Claude Code 快捷键](./shortcuts)
+
 ## 高效使用
 
 ### 项目初始化

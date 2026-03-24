@@ -21,7 +21,7 @@ npm install -g @google/gemini-cli
 创建环境变量文件 `~/.gemini/.env`：
 
 ```bash
-GOOGLE_GEMINI_BASE_URL=https://your-code80-domain.com/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1beta
 GEMINI_API_KEY=your-api-key
 GEMINI_MODEL=gemini-2.5-pro
 ```
@@ -34,7 +34,7 @@ GEMINI_MODEL=gemini-2.5-pro
 }
 ```
 
-> 将 `your-api-key` 替换为你在 Code80 平台获取的 API Key，`your-code80-domain.com` 替换为你的 Code80 服务地址。
+> 将 `your-api-key` 替换为你在 Code80 平台获取的 API Key。
 
 ### 3. 开始使用
 
@@ -56,5 +56,6 @@ Gemini CLI 特色：超大上下文窗口、Agent Mode 自动规划、Google Sea
 
 - [安装详解](./install) - 分平台的详细安装步骤
 - [配置详解](./config) - 完整的配置文件说明
+- [快捷键速查](./shortcuts) - 常用快捷键与高频使用入口
 - [使用技巧](./tips) - 高级用法和效率提升
 - [常见问题](./faq) - 遇到问题看这里
