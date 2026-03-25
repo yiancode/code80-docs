@@ -27,18 +27,18 @@ mkdir -p ~/.codex
 编辑 `~/.codex/config.toml`：
 
 ```toml
-model_provider = "code80"
-model = "gpt-5.3-codex"
-model_reasoning_effort = "high"
+model_provider = "Custom"
+model = "gpt-5.4"
+preferred_auth_method = "apikey"
+model_reasoning_effort = "medium"
 network_access = "enabled"
 disable_response_storage = true
 model_verbosity = "high"
 
-[model_providers.code80]
-name = "code80"
-base_url = "https://code.ai80.vip/v1"
+[model_providers.Custom]
+name = "Custom"
+base_url = "https://code.ai80.vip"
 wire_api = "responses"
-requires_openai_auth = true
 ```
 
 编辑 `~/.codex/auth.json`：

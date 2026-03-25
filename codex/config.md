@@ -26,19 +26,19 @@ mkdir %USERPROFILE%\.codex
 ## 主配置文件 config.toml
 
 ```toml
-model_provider = "code80"
-model = "gpt-5.3-codex"
-model_reasoning_effort = "high"
+model_provider = "Custom"
+model = "gpt-5.4"
+preferred_auth_method = "apikey"
+model_reasoning_effort = "medium"
 network_access = "enabled"
 disable_response_storage = true
 windows_wsl_setup_acknowledged = true
 model_verbosity = "high"
 
-[model_providers.code80]
-name = "code80"
-base_url = "https://code.ai80.vip/v1"
+[model_providers.Custom]
+name = "Custom"
+base_url = "https://code.ai80.vip"
 wire_api = "responses"
-requires_openai_auth = true
 ```
 
 ### 字段说明
@@ -47,13 +47,13 @@ requires_openai_auth = true
 |------|------|
 | `model_provider` | 使用的提供商名称，需与下方 `model_providers` 中的键名一致 |
 | `model` | 使用的模型名称 |
+| `preferred_auth_method` | 认证方式，使用 API Key 时可设为 `apikey` |
 | `model_reasoning_effort` | 推理努力程度：`low` / `medium` / `high` |
 | `network_access` | 是否允许网络访问：`enabled` / `disabled` |
 | `disable_response_storage` | 是否禁止存储响应 |
 | `model_verbosity` | 输出详细程度：`low` / `medium` / `high` |
-| `base_url` | Code80 平台的 API 地址，注意需要加 `/v1` |
+| `base_url` | Code80 平台的 API 地址，直接使用根地址即可 |
 | `wire_api` | API 协议类型，使用 `responses` |
-| `requires_openai_auth` | 是否需要 OpenAI 格式的认证，设为 `true` |
 
 ## 认证文件 auth.json
 

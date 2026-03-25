@@ -16,7 +16,7 @@ Gemini CLI 需要两个配置文件：
 ## 环境变量文件 .env
 
 ```bash
-GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip
 GEMINI_API_KEY=your-api-key
 GEMINI_MODEL=gemini-2.5-pro
 ```
@@ -25,7 +25,7 @@ GEMINI_MODEL=gemini-2.5-pro
 
 | 字段 | 说明 |
 |------|------|
-| `GOOGLE_GEMINI_BASE_URL` | Code80 平台的 API 地址，注意路径需要加 `/v1beta` |
+| `GOOGLE_GEMINI_BASE_URL` | Code80 平台的 API 地址，直接使用根地址即可 |
 | `GEMINI_API_KEY` | 你的 API Key |
 | `GEMINI_MODEL` | 使用的模型名称 |
 
@@ -33,7 +33,17 @@ GEMINI_MODEL=gemini-2.5-pro
 
 ```json
 {
-  "theme": "system"
+  "ide": {
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  },
+  "ui": {
+    "theme": "Default"
+  }
 }
 ```
 
@@ -41,13 +51,15 @@ GEMINI_MODEL=gemini-2.5-pro
 
 | 字段 | 说明 |
 |------|------|
-| `theme` | 主题设置：`system`（跟随系统）/ `dark` / `light` |
+| `ide.enabled` | 是否启用 IDE 集成 |
+| `security.auth.selectedType` | 认证方式，这里使用 `gemini-api-key` |
+| `ui.theme` | UI 主题名称 |
 
 ## 完整配置示例
 
 `.env` 文件：
 ```bash
-GOOGLE_GEMINI_BASE_URL=https://api.ai80.vip/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip
 GEMINI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
 GEMINI_MODEL=gemini-2.5-pro
 ```
@@ -55,7 +67,17 @@ GEMINI_MODEL=gemini-2.5-pro
 `settings.json` 文件：
 ```json
 {
-  "theme": "system"
+  "ide": {
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  },
+  "ui": {
+    "theme": "Default"
+  }
 }
 ```
 
@@ -65,5 +87,5 @@ GEMINI_MODEL=gemini-2.5-pro
 
 ## 注意事项
 
-- Base URL 末尾需要加 `/v1beta`，这与 Claude Code 和 Codex CLI 不同
+- Base URL 直接使用 `https://code.ai80.vip`
 - API Key 在 Code80 平台创建时，请选择 **Google 平台**对应的分组

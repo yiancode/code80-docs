@@ -19,15 +19,15 @@ nvm use 20
 
 ### Base URL 格式
 
-Gemini CLI 的 Base URL 需要加 `/v1beta` 后缀，与其他工具不同：
+Gemini CLI 的 Base URL 直接使用根地址即可：
 
 ```bash
 # 正确
-GOOGLE_GEMINI_BASE_URL=https://api.ai80.vip/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip
 
 # 错误
-GOOGLE_GEMINI_BASE_URL=https://api.ai80.vip
-GOOGLE_GEMINI_BASE_URL=https://api.ai80.vip/v1
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1
 ```
 
 ### 启动报认证错误

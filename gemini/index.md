@@ -21,7 +21,7 @@ npm install -g @google/gemini-cli
 创建环境变量文件 `~/.gemini/.env`：
 
 ```bash
-GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip/v1beta
+GOOGLE_GEMINI_BASE_URL=https://code.ai80.vip
 GEMINI_API_KEY=your-api-key
 GEMINI_MODEL=gemini-2.5-pro
 ```
@@ -30,7 +30,17 @@ GEMINI_MODEL=gemini-2.5-pro
 
 ```json
 {
-  "theme": "system"
+  "ide": {
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  },
+  "ui": {
+    "theme": "Default"
+  }
 }
 ```
 
