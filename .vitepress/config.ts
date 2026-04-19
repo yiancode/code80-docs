@@ -37,6 +37,7 @@ export default defineConfig({
         items: [
           { text: 'API Key 管理', link: '/guide/api-keys' },
           { text: '计费与订阅', link: '/guide/billing' },
+          { text: 'OpenClaw 接入', link: '/guide/openclaw' },
           { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
           { text: '工具功能对比', link: '/guide/comparison' },
           { text: '常见问题', link: '/guide/faq' }
@@ -117,6 +118,7 @@ export default defineConfig({
           items: [
             { text: 'API Key 管理', link: '/guide/api-keys' },
             { text: '计费与订阅', link: '/guide/billing' },
+            { text: 'OpenClaw 接入', link: '/guide/openclaw' },
             { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
             { text: '工具功能对比', link: '/guide/comparison' },
             { text: '常见问题', link: '/guide/faq' }
