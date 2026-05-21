@@ -28,7 +28,7 @@ sudo apt-get install bubblewrap
 ### 配置后连接失败
 
 检查以下几点：
-1. `base_url` 末尾是否有 `/v1`（Codex CLI 需要）
+1. `base_url` 末尾不要加 `/v1`
 2. API Key 是否正确
 3. API Key 对应的分组是否是 OpenAI 平台
 

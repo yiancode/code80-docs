@@ -51,7 +51,7 @@ description: Claude Code、Codex CLI、Gemini CLI 三大 AI 编程工具功能�
 
 ### Codex CLI
 - 配置文件：`~/.codex/config.toml` + `~/.codex/auth.json`
-- API 地址格式：`https://domain.com/v1`（加 `/v1`）
+- API 地址格式：`https://domain.com`（不加路径后缀）
 - Key 字段：`OPENAI_API_KEY`
 
 ### Gemini CLI

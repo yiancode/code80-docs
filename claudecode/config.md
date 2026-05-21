@@ -37,7 +37,7 @@ Claude Code 使用 JSON 格式的配置文件：
 
 Code80 平台的 API 地址。
 
-- 格式：完整的 URL，如 `https://api.example.com`
+- 格式：完整的 URL，如 `https://code.ai80.vip`
 - 不要在末尾加 `/v1` 等路径
 
 ## 完整配置示例
@@ -46,7 +46,7 @@ Code80 平台的 API 地址。
 {
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
-    "ANTHROPIC_BASE_URL": "https://api.ai80.vip"
+    "ANTHROPIC_BASE_URL": "https://code.ai80.vip"
   }
 }
 ```
@@ -61,7 +61,7 @@ Code80 平台的 API 地址。
 
 ```bash
 export ANTHROPIC_AUTH_TOKEN="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
-export ANTHROPIC_BASE_URL="https://api.ai80.vip"
+export ANTHROPIC_BASE_URL="https://code.ai80.vip"
 ```
 
 配置文件中的设置优先级高于环境变量。
