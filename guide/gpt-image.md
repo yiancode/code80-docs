@@ -32,9 +32,9 @@ Code80 除了中转 Claude、Codex、Gemini 这些编程模型，也中转 OpenA
 | 模型 | 调用方式 | 鉴权要求 |
 |------|----------|----------|
 | `gpt-image-1` | 标准 `/v1/images/generations` 接口 | Code80 API Key 即可 |
-| `gpt-image-2` | 走 Responses API | 需要 ChatGPT 订阅账号路径 |
+| `gpt-image-2` | 走 Responses API `/v1/responses` | Code80 API Key 即可 |
 
-`gpt-image-1` 用 API Key 就能直接调，是大多数人的首选。`gpt-image-2` 在中文文字渲染、插画质量上更强，但它不走传统的生图接口，必须通过 Responses API 调用，并依赖 ChatGPT 订阅账号。
+`gpt-image-1` 用 API Key 就能直接调，是大多数人的首选。`gpt-image-2` 在中文文字渲染、插画质量上更强，但它不走传统的生图接口，必须通过 Responses API 调用。
 
 如果你的目标只是"能用 API 出图"，先从 `gpt-image-1` 开始最省事。下面的 curl 和 Python 示例都以 `gpt-image-1` 为例，`gpt-image-2` 的差异单独放在文末说明。
 
@@ -76,10 +76,10 @@ print('保存成功：output.png')
 
 `response_format` 有两种取值：
 
-- `url`：返回图片链接，有时效限制，过期后打不开
-- `b64_json`：返回 base64，直接存本地，不依赖链接有效期
+- `url`：返回 base64 data URI（`data:image/png;base64,...`），可直接用于 `<img>` 标签
+- `b64_json`：返回纯 base64 字符串，适合存为本地文件
 
-批量处理建议用 `b64_json`，省得链接过期。
+批量处理两种都可以，`b64_json` 解析更直接。
 
 ## 方式二：Python SDK
 
@@ -111,31 +111,50 @@ print("生成完成")
 
 和直连 OpenAI 官方接口的写法一样，区别只有 `api_key` 和 `base_url` 两处。
 
-## 参数说明
+### 参数说明
 
 | 参数 | 常用值 | 说明 |
 |------|--------|------|
 | `size` | `1024x1024` / `1536x1024` / `1024x1536` | 方图 / 横图 / 竖图 |
 | `quality` | `low` / `medium` / `high` | 速度与质量的取舍，`medium` 是多数场景的平衡点 |
 | `n` | `1` | 每次生成数量，建议先用 1 张把 Prompt 调好再批量 |
-| `response_format` | `url` / `b64_json` | 返回链接或 base64，批量建议 `b64_json` |
+| `response_format` | `url` / `b64_json` | `url` 返回 data URI，`b64_json` 返回纯 base64 字符串 |
 
 Prompt 建议用英文描述。生成中文文字的能力还不够稳定，如果图里不需要出现文字，用英文描述的效果更可控。
 
-## 关于 gpt-image-2
+### 关于 gpt-image-2
 
-`gpt-image-2` 不走上面的 `/v1/images/generations` 接口，而是通过 **Responses API** 调用，并且需要 ChatGPT 订阅账号路径，不能只靠普通 API Key。
+`gpt-image-2` 不走 `/v1/images/generations` 接口，而是通过 **Responses API** 调用，同样只需要 Code80 API Key。
 
-这是它和 `gpt-image-1` 最大的使用门槛差异：
+调用示例：
 
-- `gpt-image-1`：标准生图接口 + API Key，接入简单
-- `gpt-image-2`：Responses API + ChatGPT 订阅账号，质量更好但配置更复杂
+```bash
+curl -s https://code.ai80.vip/v1/responses \
+  -H "Authorization: Bearer 你的API-Key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-image-2",
+    "input": "A cinematic illustration of a programmer working late at night",
+    "tools": [{"type": "image_generation"}]
+  }' | python3 -c "
+import sys, json, base64
+data = json.load(sys.stdin)
+img = base64.b64decode(data['output'][0]['result'])
+open('output.png', 'wb').write(img)
+print('保存成功：output.png')
+"
+```
 
-如果你确实需要 `gpt-image-2` 的中文渲染和插画质量，需要按 Responses API 的方式接入，具体调用结构请以 OpenAI 官方 Responses API 文档为准。日常配图用 `gpt-image-1` 通常已经够用。
+返回结构和 `gpt-image-1` 不同，图片 base64 在 `output[0].result` 字段里。
 
-## 常见问题
+两个模型的对比：
 
-### 1. 提示 401 错误
+- `gpt-image-1`：标准生图接口，接入简单，日常配图够用
+- `gpt-image-2`：Responses API，中文文字渲染和插画质量更好，配置稍复杂
+
+### 常见问题
+
+#### 1. 提示 401 错误
 
 通常优先检查：
 
@@ -150,14 +169,35 @@ Prompt 建议用英文描述。生成中文文字的能力还不够稳定，如�
 
 这说明接口本身是通的，`401` 更偏向鉴权或配置问题。
 
-### 2. 返回的图片链接打不开
+#### 2. response_format: "url" 返回的不是 HTTP 链接
 
-如果用的是 `response_format: "url"`，链接是有时效的，过期就打不开。改用 `response_format: "b64_json"` 直接拿 base64 存本地即可。
+Code80 的 `url` 模式实际返回的是 `data:image/png;base64,...` 格式的 data URI，不是带时效的 HTTP 链接。可以直接塞进 `<img src="">` 使用。如果需要保存为文件，用 `b64_json` 更直接。
 
-### 3. 生成很慢
+#### 3. 生成很慢
 
 `quality` 设成 `high` 会明显变慢。大多数配图场景 `medium` 就够用，速度和质量更平衡。先用 `medium` 把 Prompt 调好，确实需要高清再切 `high`。
 
-### 4. base_url 到底要不要带 /v1
+#### 4. base_url 到底要不要带 /v1
 
-生图走 OpenAI 兼容接口，**要带 `/v1`**，写成 `https://code.ai80.vip/v1`。只有 Claude / Anthropic 兼容接入才用不带 `/v1` 的根地址，别套用错。
+生图走 OpenAI 兼容接口，推荐写成 `https://code.ai80.vip/v1`。Claude / Anthropic 兼容接入用的是根地址，两者配置习惯不同，注意别混用。
+
+## 方式三：Skill 一键生图
+
+不想手写代码，可以直接给 Claude Code / Codex 说：
+
+```
+帮我安装这个 skill: https://docs.ai80.vip/skills/gen-gpt-image-2.md
+```
+
+Agent 会自动把 `gen-gpt-image-2` skill 装好。之后只需要说：
+
+```
+/gen-gpt-image-2 A programmer working late at night, city lights, warm lamp
+```
+
+Agent 会自动调用 Code80 的 `gpt-image-2` 模型，把图片保存到本地。
+
+Skill 功能：
+- 自动读取 `CODE80_API_KEY` 环境变量，或询问你提供 Key
+- 调用 `gpt-image-2` Responses API 生图
+- 结果保存为 `image_<时间戳>.png`

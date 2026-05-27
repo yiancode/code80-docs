@@ -17,6 +17,9 @@ hero:
     - theme: alt
       text: CLI 快捷键
       link: /guide/cli-shortcuts
+    - theme: alt
+      text: GPT Image 2 生图
+      link: /guide/gpt-image#方式三-skill-一键生图
 
 features:
   - icon:
