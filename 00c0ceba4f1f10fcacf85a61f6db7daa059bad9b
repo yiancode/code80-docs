@@ -1,0 +1,30 @@
+guide/gpt-image.md
+  b76b5cee915cba5a 1-163
+.vitepress/config.ts
+  b76b5cee915cba5a 41,123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "00c0ceba4f1f10fcacf85a61f6db7daa059bad9b",
+  "prompts": {
+    "b76b5cee915cba5a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db4af969-78c9-41f5-a52c-cfc757c1de8f",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "stinglong",
+      "messages": [],
+      "total_additions": 165,
+      "total_deletions": 0,
+      "accepted_lines": 165,
+      "overriden_lines": 0,
+      "messages_url": "http://10.9.107.193:8000/cas/a5dacf730cb5c2891c4acb711880a7e32a9813a931f9ac186e9ebc1abea3efd9",
+      "custom_attributes": {
+        "team": "风控研发中心",
+        "user": "stinglong"
+      }
+    }
+  }
+}
