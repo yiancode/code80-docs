@@ -3,5 +3,9 @@
 
 REMOTE_HOST="YOUR_SERVER_IP"
 REMOTE_USER="root"
-REMOTE_DIR="/www/wwwroot/docs.ai80.vip"
+REMOTE_DIR="/www/wwwroot/YOUR_DOMAIN"
 # SSH_KEY="~/.ssh/id_rsa"  # 可选，指定 SSH 密钥
+
+# Web Server 运行用户（部署后 chown，避免 403）
+WEB_USER="www"
+WEB_GROUP="www"

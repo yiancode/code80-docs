@@ -15,8 +15,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # 默认配置
 REMOTE_HOST="YOUR_SERVER_IP"
 REMOTE_USER="root"
-REMOTE_DIR="/www/wwwroot/docs.ai80.vip"
+REMOTE_DIR="/www/wwwroot/YOUR_DOMAIN"
 SSH_KEY=""
+# Web server user (Nginx/Apache 运行用户，部署后会 chown 到该用户)
+WEB_USER="www"
+WEB_GROUP="www"
 
 # 加载本地配置（不提交到 git）
 if [ -f "$SCRIPT_DIR/deploy.local.conf" ]; then
@@ -158,6 +161,11 @@ fi
 mv "\$NEW_DIR" "${REMOTE_DIR}"
 rm -rf "${REMOTE_DIR}.old"
 
+# 修正属主和权限，避免 tar 携带本地 UID 导致 Web Server 读不到（403）
+chown -R ${WEB_USER}:${WEB_GROUP} "${REMOTE_DIR}"
+find "${REMOTE_DIR}" -type d -exec chmod 755 {} \;
+find "${REMOTE_DIR}" -type f -exec chmod 644 {} \;
+
 echo "FILES: \$(find ${REMOTE_DIR} -type f | wc -l)"
 REMOTEOF
 
@@ -178,8 +186,6 @@ REMOTEOF
     echo "=============================================="
     print_success "部署完成"
     echo "=============================================="
-    echo ""
-    echo "访问地址: https://docs.ai80.vip"
     echo ""
 }
 
