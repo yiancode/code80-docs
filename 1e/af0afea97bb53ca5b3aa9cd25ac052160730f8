@@ -1,0 +1,28 @@
+_test_ok.tmp
+  c80eb6bba3fe2dae 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "1eaf0afea97bb53ca5b3aa9cd25ac052160730f8",
+  "prompts": {
+    "c80eb6bba3fe2dae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b06d81-29e0-4f2d-8967-6989f5b29cd0",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "yian",
+      "messages": [],
+      "total_additions": 72,
+      "total_deletions": 3,
+      "accepted_lines": 71,
+      "overriden_lines": 0,
+      "messages_url": "http://10.9.107.193:8000/cas/48accd77c7a9bc74bd4d5a47cf3a0224b2dcc05821efc782cfbb3b309d0ccdc2",
+      "custom_attributes": {
+        "user": "stinglong",
+        "team": "风控研发中心"
+      }
+    }
+  }
+}
