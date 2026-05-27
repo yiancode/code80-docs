@@ -1,0 +1,30 @@
+scripts/deploy.sh
+  c80eb6bba3fe2dae 18,20-22,164-168
+scripts/deploy.local.conf.example
+  c80eb6bba3fe2dae 6,8-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "c36fb0984a3edd69d7589457ea49d609a1cb476c",
+  "prompts": {
+    "c80eb6bba3fe2dae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b06d81-29e0-4f2d-8967-6989f5b29cd0",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "yian",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 4,
+      "accepted_lines": 14,
+      "overriden_lines": 0,
+      "messages_url": "http://10.9.107.193:8000/cas/128644d25484e1513657125fcea7a0c2b8aa60502aad91fbc29ba0988cae46b6",
+      "custom_attributes": {
+        "team": "风控研发中心",
+        "user": "stinglong"
+      }
+    }
+  }
+}
