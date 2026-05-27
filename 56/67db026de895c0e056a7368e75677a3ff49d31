@@ -1,0 +1,30 @@
+package.json
+  c80eb6bba3fe2dae 10-11,17-24
+scripts/git-hooks/pre-commit
+  c80eb6bba3fe2dae 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "5667db026de895c0e056a7368e75677a3ff49d31",
+  "prompts": {
+    "c80eb6bba3fe2dae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "06b06d81-29e0-4f2d-8967-6989f5b29cd0",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "yian",
+      "messages": [],
+      "total_additions": 75,
+      "total_deletions": 2,
+      "accepted_lines": 75,
+      "overriden_lines": 0,
+      "messages_url": "http://10.9.107.193:8000/cas/b1490e0be8812b68c5b890478d9b4af47008d70ce4f14810f4449c7c45b0c39b",
+      "custom_attributes": {
+        "team": "风控研发中心",
+        "user": "stinglong"
+      }
+    }
+  }
+}
