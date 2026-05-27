@@ -7,11 +7,19 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "prepare": "git config core.hooksPath scripts/git-hooks 2>/dev/null || true"
   },
   "devDependencies": {
     "vitepress": "^1.6.4",
     "vue": "^3.5.27"
   },
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "overrides": {
+      "rollup": "^4.60.4",
+      "postcss": "^8.5.15",
+      "esbuild": "^0.25.0"
+    }
+  }
 }

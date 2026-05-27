@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# pre-commit: 扫描即将提交的内容是否含真实 secret
+# 启用方式：pnpm install 自动配置 core.hooksPath
+#
+
+set -e
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# 仅检查新增/修改行，避免历史误报
+DIFF=$(git diff --cached --diff-filter=ACMR -U0)
+
+if [ -z "$DIFF" ]; then
+    exit 0
+fi
+
+# 仅匹配新增行（以 + 开头，排除文件头 +++）
+ADDED=$(echo "$DIFF" | grep -E "^\+[^+]" | sed 's/^+//')
+
+if [ -z "$ADDED" ]; then
+    exit 0
+fi
+
+FOUND=0
+report() {
+    local pattern_name="$1"
+    local pattern="$2"
+    local hits
+    hits=$(echo "$ADDED" | grep -nE -- "$pattern" || true)
+    if [ -n "$hits" ]; then
+        echo -e "${RED}[BLOCKED]${NC} 检测到可能的 ${pattern_name}：" >&2
+        echo "$hits" | head -5 | sed 's/^/  /' >&2
+        FOUND=1
+    fi
+}
+
+# 各类 token 模式（保守匹配真实长度，避免占位符 xxxxx 误报）
+report "Anthropic API Key"     'sk-ant-[a-zA-Z0-9_-]{40,}'
+report "OpenAI API Key"        'sk-(proj-|svcacct-)?[a-zA-Z0-9]{40,}'
+report "Generic sk- Token"     'sk-[a-zA-Z0-9]{32,}'
+report "AWS Access Key"        'AKIA[0-9A-Z]{16}'
+report "Google API Key"        'AIza[0-9A-Za-z_-]{35}'
+report "GitHub Token"          'gh[ps]_[a-zA-Z0-9]{36,}'
+report "Slack Token"           'xox[baprs]-[0-9a-zA-Z-]{10,}'
+report "Private Key Block"     '-----BEGIN (RSA|OPENSSH|EC|DSA|PGP) PRIVATE KEY-----'
+report "硬编码密码"             'password\s*[:=]\s*["'\''][A-Za-z0-9!@#$%^&*]{8,}["'\'']'
+# 内部服务器 IP / 域名 — 按需在 SECRET_IPS 文件中维护（不入库），或在此扩展模式
+# 如要按 IP 列表过滤，建议改为读取 .git/info/secret-ips
+if [ -f .git/info/secret-ips ]; then
+    while IFS= read -r ip; do
+        [ -z "$ip" ] && continue
+        report "内部服务器 IP" "\b$(echo "$ip" | sed 's/\./\\./g')\b"
+    done < .git/info/secret-ips
+fi
+
+if [ "$FOUND" -ne 0 ]; then
+    echo "" >&2
+    echo -e "${YELLOW}若确认为占位符或文档示例，可用 'git commit --no-verify' 跳过（请谨慎）${NC}" >&2
+    exit 1
+fi
+
+exit 0
