@@ -42,6 +42,7 @@ export default defineConfig({
           { text: 'OpenAI 接口对齐', link: '/guide/openai-compat' },
           { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
           { text: '工具功能对比', link: '/guide/comparison' },
+          { text: '企业接入说明', link: '/guide/enterprise' },
           { text: '常见问题', link: '/guide/faq' }
         ]
       },
@@ -125,6 +126,7 @@ export default defineConfig({
             { text: 'OpenAI 接口对齐', link: '/guide/openai-compat' },
             { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
             { text: '工具功能对比', link: '/guide/comparison' },
+            { text: '企业接入说明', link: '/guide/enterprise' },
             { text: '常见问题', link: '/guide/faq' }
           ]
         },
