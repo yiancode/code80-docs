@@ -39,6 +39,7 @@ export default defineConfig({
           { text: '计费与订阅', link: '/guide/billing' },
           { text: 'OpenClaw 接入', link: '/guide/openclaw' },
           { text: 'GPT Image 生图接入', link: '/guide/gpt-image' },
+          { text: 'OpenAI 接口对齐', link: '/guide/openai-compat' },
           { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
           { text: '工具功能对比', link: '/guide/comparison' },
           { text: '常见问题', link: '/guide/faq' }
@@ -121,6 +122,7 @@ export default defineConfig({
             { text: '计费与订阅', link: '/guide/billing' },
             { text: 'OpenClaw 接入', link: '/guide/openclaw' },
             { text: 'GPT Image 生图接入', link: '/guide/gpt-image' },
+            { text: 'OpenAI 接口对齐', link: '/guide/openai-compat' },
             { text: 'CLI 快捷键总览', link: '/guide/cli-shortcuts' },
             { text: '工具功能对比', link: '/guide/comparison' },
             { text: '常见问题', link: '/guide/faq' }
