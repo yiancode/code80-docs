@@ -1,0 +1,28 @@
+guide/api-reference.md
+  ae6fe23a86f44d07 94-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "537716c10c8ad34bbfe07a06e91bb6e6c4562e39",
+  "prompts": {
+    "ae6fe23a86f44d07": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d203e01-8e08-4091-afa0-a8ea4fa6548b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "yian",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 0,
+      "accepted_lines": 9,
+      "overriden_lines": 0,
+      "messages_url": "http://10.9.107.193:8000/cas/503cd6643830ca52dc4395bd178e97234b0a2b1d31f79a1ed7b389c350869ef9",
+      "custom_attributes": {
+        "team": "风控研发中心",
+        "user": "stinglong"
+      }
+    }
+  }
+}
