@@ -91,6 +91,15 @@ Content-Type: application/json
 
 > **Reasoning effort**：取值越高推理越充分，但更慢、更贵。简单任务用 `low` / `minimal` 提速，复杂推理用 `high`。该字段原样透传，平台不改写。
 
+::: tip 关于 reasoning_effort 的回显
+两个端点的回显行为不同，与 OpenAI 官方一致：
+
+- **Chat Completions**：`reasoning_effort` 是入参，响应体中**不会回显**该字段（OpenAI 官方行为，非平台删改）。本次推理消耗只体现在 `usage.completion_tokens_details.reasoning_tokens`。
+- **Responses API**：响应体顶层**会回显** `reasoning` 对象，如 `"reasoning": { "effort": "high", "summary": null }`，推理消耗见 `usage.output_tokens_details.reasoning_tokens`。
+
+想在响应里看到 effort 回显，用 Responses API；只需对话结果与推理用量统计，用 Chat Completions 即可。
+:::
+
 ### Reasoning Effort 示例
 
 Responses API（字段为 `reasoning.effort`）：
