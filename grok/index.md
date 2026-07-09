@@ -10,6 +10,17 @@ Grok CLI 是 [superagent-ai/grok-cli](https://github.com/superagent-ai/grok-cli)
 这是社区维护的开源项目，不是 xAI 官方 CLI。本教程按 [grok-dev@1.1.7](https://github.com/superagent-ai/grok-cli/releases/tag/grok-dev%401.1.7) 验证。
 :::
 
+::: tip 一键让 Claude Code / Codex 配置 Grok
+不想手动执行下面的步骤时，复制这段提示词，直接粘贴到 Claude Code 或 Codex。Agent 会先检查本机环境；如果没有找到 API Key，会向你索要，不会自行猜测。
+
+```text
+帮我安装并配置 Grok CLI，通过 Code80 中转。请阅读并严格执行教程：https://docs.ai80.vip/grok/；自动检测旧版 grok 和 PATH 冲突，配置 GROK_BASE_URL=https://code.ai80.vip/v1、默认模型 grok-4.3；如果没有可访问 Grok 模型的 Code80 API Key，请先向我索要；不要使用 grok-code-fast-1，不要泄露或提交 API Key；完成后用 grok --version 和一次最小请求验证。
+```
+
+::: warning 密钥安全
+只在可信的 Claude Code / Codex 会话中提供 API Key。不要把真实 Key 写进项目文件或公开聊天记录。
+:::
+
 ## 快速开始
 
 只需 3 步，即可通过 Code80 平台使用 Grok CLI。
