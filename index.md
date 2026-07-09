@@ -3,7 +3,7 @@ layout: home
 hero:
   name: Code80
   text: AI 编程巴士
-  tagline: Claude Code、Codex CLI、Gemini CLI 配置教程、使用技巧与插件玩法
+  tagline: Claude Code、Codex CLI、Gemini CLI、Grok CLI 配置教程与使用技巧
   actions:
     - theme: brand
       text: Claude Code
@@ -14,6 +14,9 @@ hero:
     - theme: alt
       text: Gemini CLI
       link: /gemini/
+    - theme: alt
+      text: Grok CLI
+      link: /grok/
     - theme: alt
       text: CLI 快捷键
       link: /guide/cli-shortcuts
@@ -26,7 +29,7 @@ features:
       src: /icons/key.svg
       alt: 一键接入
     title: 一键接入
-    details: 获取一个 API 密钥，即可配置 Claude Code、Codex CLI、Gemini CLI 三大工具
+    details: 按模型分组创建 API 密钥，即可配置 Claude Code、Codex CLI、Gemini CLI、Grok CLI
   - icon:
       src: /icons/bolt.svg
       alt: 稳定可靠
@@ -39,9 +42,9 @@ features:
     details: 按实际使用量计费，支持设置配额上限，团队用量一目了然
   - icon:
       src: /icons/code.svg
-      alt: 三大工具全覆盖
-    title: 三大工具全覆盖
-    details: 支持 Anthropic Claude Code、OpenAI Codex CLI、Google Gemini CLI
+      alt: 四款工具全覆盖
+    title: 四款工具全覆盖
+    details: 覆盖 Claude Code、Codex CLI、Gemini CLI，以及社区开源的 Grok CLI
   - icon:
       src: /icons/book.svg
       alt: 详细教程

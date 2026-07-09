@@ -8,7 +8,7 @@ description: Code80 平台常见问题解答，涵盖账号注册、API 使用�
 
 ### Code80 是什么？
 
-Code80 是一个 AI API 网关平台，让你通过一个统一的平台管理和使用多个 AI 编程工具（Claude Code、Codex CLI、Gemini CLI）。
+Code80 是一个 AI API 网关平台，让你通过一个统一的平台管理和使用多个 AI 编程工具（Claude Code、Codex CLI、Gemini CLI、Grok CLI）。
 
 ### 支持哪些工具？
 
@@ -16,6 +16,7 @@ Code80 是一个 AI API 网关平台，让你通过一个统一的平台管理�
 - **Claude Code** - Anthropic 官方 CLI
 - **Codex CLI** - OpenAI 官方 CLI
 - **Gemini CLI** - Google 官方 CLI
+- **Grok CLI** - superagent-ai 社区维护的开源 CLI（不是 xAI 官方 CLI）
 
 ### 数据安全吗？
 
@@ -39,13 +40,17 @@ API Key 创建后只显示一次。如果丢失，请删除旧 Key 并重新创�
 
 ## 使用相关
 
-### 三个工具能用同一个 API Key 吗？
+### 四款工具能用同一个 API Key 吗？
 
-不能。每个工具对应不同的平台（Anthropic/OpenAI/Google），需要分别创建对应平台分组的 API Key。
+通常不能。每个 API Key 只绑定一个分组，而不同 CLI 使用的协议和模型权限不同。请分别创建或选择包含 Anthropic、OpenAI、Google、Grok 对应模型权限的 Key。
 
 ### 配置文件修改后不生效
 
 所有工具修改配置后都需要重启才能生效。退出当前会话后重新启动工具即可。
+
+### Grok CLI 为什么仍请求 `grok-code-fast-1`？
+
+通常是终端命中了旧的同名程序，或项目配置覆盖了模型。请查看 [Grok CLI 常见问题](/grok/faq) 完成 PATH、版本和模型排查。
 
 ### 如何查看使用量？
 

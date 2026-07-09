@@ -1,5 +1,5 @@
 ---
-description: Code80 平台 API Key 创建、管理与安全使用指南，一个密钥接入多个 AI 编程工具
+description: Code80 平台 API Key 创建、分组管理与安全使用指南，为不同 AI 编程工具选择正确模型权限
 ---
 
 # API Key 管理
@@ -18,6 +18,7 @@ API Key 是你访问 Code80 平台 AI 服务的凭证。每个 Key 绑定一个�
    - **Anthropic 分组** → 用于 Claude Code
    - **OpenAI 分组** → 用于 Codex CLI
    - **Google 分组** → 用于 Gemini CLI
+   - **可访问 Grok 模型的分组** → 用于 Grok CLI
 6. 点击创建，**立即复制保存**
 
 ::: warning 重要提示
@@ -30,6 +31,8 @@ API Key 只在创建时显示一次，请务必立即复制保存。丢失后需
 - 该 Key 可以使用哪些上游账号
 - 计费倍率
 - 是否为专属 Key
+
+每个 Key 只绑定一个分组。分组名称由管理员配置，实际可用模型以该分组的模型列表和权限为准；接入 Grok CLI 前应确认其中包含 `grok-4.3` 或计划使用的 Grok 模型。
 
 ## 安全建议
 

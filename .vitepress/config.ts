@@ -6,7 +6,7 @@ const ogImage = `${site}/logo.png`
 export default defineConfig({
   title: 'Code80',
   titleTemplate: ':title - Code80 AI编程巴士',
-  description: 'Code80 AI编程巴士 - Claude Code、Codex CLI、Gemini CLI 配置教程、使用技巧与插件玩法',
+  description: 'Code80 AI编程巴士 - Claude Code、Codex CLI、Gemini CLI、Grok CLI 配置教程、使用技巧与插件玩法',
   cleanUrls: true,
   lastUpdated: true,
   lang: 'zh-CN',
@@ -23,7 +23,7 @@ export default defineConfig({
     ['meta', { property: 'og:locale', content: 'zh_CN' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],
     ['meta', { name: 'twitter:image', content: ogImage }],
-    ['meta', { name: 'keywords', content: 'Code80,AI编程巴士,Claude Code,Codex CLI,Gemini CLI,AI编程助手,API网关,AI编程工具配置' }]
+    ['meta', { name: 'keywords', content: 'Code80,AI编程巴士,Claude Code,Codex CLI,Gemini CLI,Grok CLI,AI编程助手,API网关,AI编程工具配置' }]
   ],
 
   themeConfig: {
@@ -32,6 +32,7 @@ export default defineConfig({
       { text: 'Claude Code', link: '/claudecode/' },
       { text: 'Codex CLI', link: '/codex/' },
       { text: 'Gemini CLI', link: '/gemini/' },
+      { text: 'Grok CLI', link: '/grok/' },
       {
         text: '使用指南',
         items: [
@@ -72,7 +73,8 @@ export default defineConfig({
           text: '其他工具',
           items: [
             { text: 'Codex CLI', link: '/codex/' },
-            { text: 'Gemini CLI', link: '/gemini/' }
+            { text: 'Gemini CLI', link: '/gemini/' },
+            { text: 'Grok CLI', link: '/grok/' }
           ]
         }
       ],
@@ -92,7 +94,8 @@ export default defineConfig({
           text: '其他工具',
           items: [
             { text: 'Claude Code', link: '/claudecode/' },
-            { text: 'Gemini CLI', link: '/gemini/' }
+            { text: 'Gemini CLI', link: '/gemini/' },
+            { text: 'Grok CLI', link: '/grok/' }
           ]
         }
       ],
@@ -112,7 +115,29 @@ export default defineConfig({
           text: '其他工具',
           items: [
             { text: 'Claude Code', link: '/claudecode/' },
-            { text: 'Codex CLI', link: '/codex/' }
+            { text: 'Codex CLI', link: '/codex/' },
+            { text: 'Grok CLI', link: '/grok/' }
+          ]
+        }
+      ],
+      '/grok/': [
+        {
+          text: 'Grok CLI',
+          items: [
+            { text: '概述与快速开始', link: '/grok/' },
+            { text: '安装详解', link: '/grok/install' },
+            { text: '配置详解', link: '/grok/config' },
+            { text: '快捷键速查', link: '/grok/shortcuts' },
+            { text: '使用技巧', link: '/grok/tips' },
+            { text: '常见问题', link: '/grok/faq' }
+          ]
+        },
+        {
+          text: '其他工具',
+          items: [
+            { text: 'Claude Code', link: '/claudecode/' },
+            { text: 'Codex CLI', link: '/codex/' },
+            { text: 'Gemini CLI', link: '/gemini/' }
           ]
         }
       ],

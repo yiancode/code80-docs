@@ -4,14 +4,14 @@ description: 在 Code80 平台接入 OpenAI GPT Image 生图模型，使用 Open
 
 # GPT Image 生图接入
 
-Code80 除了中转 Claude、Codex、Gemini 这些编程模型，也中转 OpenAI 的图片生成能力。本页介绍如何用你已有的 Code80 API Key，通过 OpenAI 兼容接口调用 GPT Image 生图。
+Code80 除了中转 Claude、Codex、Gemini、Grok 这些编程模型，也中转 OpenAI 的图片生成能力。本页介绍如何用你已有的 Code80 API Key，通过 OpenAI 兼容接口调用 GPT Image 生图。
 
 接口格式和 OpenAI 官方完全一致，如果你用过 OpenAI 的 Images API，这里只需要把 `base_url` 换成 Code80 的地址，其余代码不用改。
 
 ## 适用场景
 
 - 想用 API 批量生成封面图、插画、文章配图
-- 已经在用 Code80 的 Claude Code / Codex，想顺带把生图也接进来
+- 已经在用 Code80 的 Claude Code / Codex / Gemini / Grok CLI，想顺带把生图也接进来
 - 需要 OpenAI 兼容的生图接口，但不想直连 OpenAI
 
 ## 配置前确认

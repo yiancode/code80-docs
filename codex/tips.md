@@ -45,4 +45,4 @@ Codex CLI 默认在沙箱中运行代码，确保安全性。Linux 需要安装 
 
 ## 与其他工具对比
 
-查看 [工具功能对比](/guide/comparison) 了解 Codex CLI 与 Claude Code、Gemini CLI 的差异。
+查看 [工具功能对比](/guide/comparison) 了解 Codex CLI 与 Claude Code、Gemini CLI、Grok CLI 的差异。
