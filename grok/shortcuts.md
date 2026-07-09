@@ -62,6 +62,11 @@ Grok CLI 同时支持全屏交互、slash commands 和命令行参数。日常�
 | 查看本地模型目录 | `grok models` |
 | 更新 CLI | `grok update`（仅脚本安装） |
 
+<figure>
+  <img src="/grok/grok-models-terminal.svg" alt="Grok CLI 1.1.7 本地模型目录和 grok-code-fast-1 别名" loading="lazy" />
+  <figcaption>本机 Grok CLI 1.1.7 的模型目录示例；别名存在于本地目录，不等于中转站一定开放该模型。</figcaption>
+</figure>
+
 ## 自动化注意事项
 
 无头模式适合脚本和 CI：

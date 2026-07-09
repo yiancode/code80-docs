@@ -103,6 +103,11 @@ $env:GROK_BASE_URL = "https://code.ai80.vip/v1"
 
 永久设置后需要重新打开终端。
 
+<figure>
+  <img src="/grok/grok-config-terminal.svg" alt="终端中查看 Grok 配置并设置 Code80 Base URL" loading="lazy" />
+  <figcaption>配置示例：Key 已脱敏，Base URL 使用 Code80 的 /v1 前缀。</figcaption>
+</figure>
+
 ::: danger 不要把地址写成完整接口
 正确值是 `https://code.ai80.vip/v1`，不要写成 `/v1/chat/completions` 或 `/v1/responses`。CLI 会自行追加接口路径。
 :::

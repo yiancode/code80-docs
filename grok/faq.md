@@ -10,6 +10,11 @@ description: Grok CLI 常见问题与排障指南，包括 grok-code-fast-1、Ba
 
 这通常不是 Code80 中转不可用，而是终端命中了旧的同名 CLI。当前 1.1.7 会在请求前把 `grok-code-fast-1` 这个旧别名转换成 `grok-4.3`；如果服务端错误仍显示旧模型名，几乎可以确定运行的不是当前程序。确认二进制后，再排查环境变量和项目模型覆盖。
 
+<figure>
+  <img src="/grok/grok-code-fast-1-error.png" alt="Grok CLI 请求 grok-code-fast-1 返回 404 的真实终端截图" loading="lazy" />
+  <figcaption>真实终端截图：旧版 CLI 将 grok-code-fast-1 直接发给中转站后返回 404。</figcaption>
+</figure>
+
 按顺序排查：
 
 ```bash
