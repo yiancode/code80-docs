@@ -1,210 +1,100 @@
 ---
-description: Grok CLI 配置详解，包括 Code80 API Key、GROK_BASE_URL、grok-4.3、项目配置和优先级
+description: 使用 Code80 OpenAI 兼容接口配置 xAI 官方 Grok Build，包含模型目录、Key 安全和验证方法
 ---
 
-# Grok CLI 配置详解
+# Code80 中转配置
 
-Grok CLI 的密钥、Base URL 和模型来自不同配置入口。Code80 接入时，最稳妥的组合是：
+## 前置条件
 
-- API Key：保存到用户配置文件
-- Base URL：保存为 `GROK_BASE_URL` 环境变量
-- 默认模型：在用户配置中设为 `grok-4.3`
+- 已按[官方安装](./install)安装当前 Grok Build。
+- 已创建可以访问 Grok 模型的 Code80 API Key。
+- 中转基础地址为 `https://code.ai80.vip/v1`。
 
-## 配置文件位置
+## 安全保存 Key
 
-| 用途 | macOS / Linux | Windows |
-|------|---------------|---------|
-| 用户配置 | `~/.grok/user-settings.json` | `%USERPROFILE%\.grok\user-settings.json` |
-| 项目配置 | `项目目录/.grok/settings.json` | `项目目录\.grok\settings.json` |
-
-## 配置 API Key
-
-在 Code80 控制台创建一个可以访问 Grok 模型的 API Key，然后创建或编辑用户配置：
-
-```json
-{
-  "apiKey": "your-api-key",
-  "defaultModel": "grok-4.3"
-}
-```
-
-`your-api-key` 只是占位符，请替换为自己的 Key。已有配置时应合并字段，避免覆盖 MCP、子代理或其他设置。
-
-macOS / Linux 建议收紧权限：
+不要把真实 Key 写入仓库。macOS 可以保存到登录钥匙串：
 
 ```bash
-chmod 700 ~/.grok
-chmod 600 ~/.grok/user-settings.json
+security add-generic-password -U \
+  -a "$USER" \
+  -s 'code80-grok-api-key' \
+  -w 'YOUR_CODE80_API_KEY'
 ```
 
-::: tip 为什么不推荐 `grok -k your-api-key`
-`-k` 会保存密钥，但密钥也可能进入 shell 历史或进程参数。手工编辑权限为 `0600` 的配置文件更安全。
-:::
-
-## 配置 Code80 Base URL
-
-Code80 的 Grok API 前缀是：
-
-```text
-https://code.ai80.vip/v1
-```
-
-### zsh
-
-编辑 `~/.zshrc`，加入：
+在 `~/.zshrc` 加入：
 
 ```bash
-export GROK_BASE_URL="https://code.ai80.vip/v1"
+export XAI_API_KEY="$(security find-generic-password -a "$USER" -s 'code80-grok-api-key' -w 2>/dev/null)"
 ```
 
-然后执行：
+重新打开终端，或在当前终端执行：
 
 ```bash
 source ~/.zshrc
 ```
 
-### bash
+`XAI_API_KEY` 这个变量名是有意使用的：官方 Grok Build 用它为自定义 `/v1/models` 目录请求添加 `Authorization: Bearer`。不要只设置自定义名称的环境变量，否则聊天模型可能有凭据，但 `/model` 仍无法加载远端模型。
 
-编辑 `~/.bashrc`，加入：
+## 创建官方配置
+
+创建 `~/.grok/config.toml`：
+
+```toml
+[models]
+default = "code80-grok-build"
+
+[model.code80-grok-build]
+model = "grok-build-0.1"
+name = "Grok Build via Code80"
+base_url = "https://code.ai80.vip/v1"
+env_key = "XAI_API_KEY"
+api_backend = "chat_completions"
+context_window = 128000
+
+[endpoints]
+models_base_url = "https://code.ai80.vip/v1"
+models_list_url = "https://code.ai80.vip/v1/models"
+```
+
+限制配置文件权限：
 
 ```bash
-export GROK_BASE_URL="https://code.ai80.vip/v1"
+chmod 600 ~/.grok/config.toml
 ```
 
-然后执行：
+不要在文档、截图或仓库示例中填入真实 `api_key`。如果必须为自动化写入 Key，使用受限权限的用户级配置，并确认不在 Git 仓库内。
+
+## 为什么既要 `base_url` 又要 `models_base_url`
+
+- `[model.*].base_url` 决定实际推理请求发送到哪里。
+- `[endpoints].models_base_url` 和 `models_list_url` 决定 `/model` 从哪里读取模型目录。
+
+只配置前者时，Grok Build 只知道手工声明的一个模型，`/model` 通常只显示当前项。配置目录端点并重启后，模型选择器会读取中转返回的 `/v1/models`。
+
+## 验证顺序
+
+先验证 Key 是否有目录访问权限：
 
 ```bash
-source ~/.bashrc
+curl -sS https://code.ai80.vip/v1/models \
+  -H "Authorization: Bearer $XAI_API_KEY"
 ```
 
-### fish
+再验证一个实际模型的推理端点：
 
-```fish
-set -Ux GROK_BASE_URL https://code.ai80.vip/v1
+```bash
+curl -sS https://code.ai80.vip/v1/chat/completions \
+  -H "Authorization: Bearer $XAI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "grok-build-0.1",
+    "messages": [{"role": "user", "content": "Reply with exactly: OK"}],
+    "max_tokens": 4
+  }'
 ```
 
-### Windows PowerShell
+最后重启 `grok`，输入 `/model`。模型目录在启动时读取，已打开的 TUI 不会自动刷新。
 
-设置当前终端：
-
-```powershell
-$env:GROK_BASE_URL = "https://code.ai80.vip/v1"
-```
-
-永久保存到当前用户：
-
-```powershell
-[Environment]::SetEnvironmentVariable(
-  "GROK_BASE_URL",
-  "https://code.ai80.vip/v1",
-  "User"
-)
-```
-
-永久设置后需要重新打开终端。
-
-<figure>
-  <img src="/grok/grok-config-terminal.svg" alt="终端中查看 Grok 配置并设置 Code80 Base URL" loading="lazy" />
-  <figcaption>配置示例：Key 已脱敏，Base URL 使用 Code80 的 /v1 前缀。</figcaption>
-</figure>
-
-::: danger 不要把地址写成完整接口
-正确值是 `https://code.ai80.vip/v1`，不要写成 `/v1/chat/completions` 或 `/v1/responses`。CLI 会自行追加接口路径。
+::: tip 模型名
+中转返回的模型名以 `/v1/models` 为准。示例中的 `grok-build-0.1` 仅在该模型出现在你的账号模型目录时使用；否则替换成目录中实际返回的文本模型。
 :::
-
-## 1.1.7 的 baseURL 陷阱
-
-下面这种旧版配置在 Grok CLI 1.1.7 中不会生效：
-
-```json
-{
-  "baseURL": "https://code.ai80.vip/v1"
-}
-```
-
-当前版本只从 `--base-url` 或 `GROK_BASE_URL` 读取中转地址。`--base-url` 也不会自动持久化，所以长期使用应配置环境变量。
-
-## 模型配置
-
-推荐默认使用：
-
-```text
-grok-4.3
-```
-
-启动时指定模型并保存为新的用户默认值：
-
-```bash
-grok -m grok-4.3
-```
-
-Grok CLI 1.1.7 会把 `-m` / `--model` 写回用户配置的 `defaultModel`。只想为单次命令覆盖、又不修改用户默认值时，可以使用进程级环境变量：
-
-```bash
-GROK_MODEL=grok-4.3 grok -p "只回复 OK"
-```
-
-使用环境变量强制所有项目使用同一模型：
-
-```bash
-export GROK_MODEL="grok-4.3"
-```
-
-只有确实希望禁止项目或执行模式切换模型时才设置 `GROK_MODEL`。日常使用保留 `defaultModel` 更灵活。
-
-项目可以在 `.grok/settings.json` 中单独指定模型：
-
-```json
-{
-  "model": "grok-4.3"
-}
-```
-
-## 配置优先级
-
-| 配置 | 从高到低 |
-|------|----------|
-| API Key | `--api-key` → `GROK_API_KEY` → 用户配置 `apiKey` |
-| Base URL | `--base-url` → `GROK_BASE_URL` → xAI 官方默认地址 |
-| 模型 | `--model` → `GROK_MODEL` → 项目 `.grok/settings.json` → 当前执行模式的模型 → 用户配置 `defaultModel` |
-
-如果全局已经设置 `grok-4.3`，某个目录仍请求旧模型，优先检查该项目的 `.grok/settings.json` 和 `GROK_MODEL`。
-
-上表描述的是启动时的解析顺序。在交互界面中切换执行模式后，该模式配置的模型仍可能成为当前模型；需要始终锁定同一模型时，使用 `GROK_MODEL`。
-
-## 查看和验证配置
-
-确认环境变量：
-
-```bash
-echo "$GROK_BASE_URL"
-```
-
-查看 CLI 本地模型目录：
-
-```bash
-grok models
-```
-
-::: warning `grok models` 不是服务端模型列表
-该命令显示 Grok CLI 内置的模型目录，不代表当前 Code80 API Key 一定有权调用。实际可用模型以 Code80 控制台和 `/v1/models` 返回结果为准。
-:::
-
-做一次端到端验证：
-
-```bash
-grok -m grok-4.3 -p "只回复 GROK_CLI_OK"
-```
-
-## 安全建议
-
-- 不要把真实 API Key 写进项目仓库、截图或聊天记录
-- 不要把 `user-settings.json` 复制到公开目录
-- 怀疑泄露时立即在 Code80 控制台轮换 Key
-- CI 中使用密钥管理服务注入 `GROK_API_KEY`，不要硬编码
-- Base URL 不是秘密，可以保存在 shell 配置中
-
-## 上游项目参考
-
-- [Grok CLI README](https://github.com/superagent-ai/grok-cli#api-key-pick-one)
-- [Grok CLI v1.1.7 配置读取逻辑](https://github.com/superagent-ai/grok-cli/blob/grok-dev%401.1.7/src/utils/settings.ts#L312-L335)

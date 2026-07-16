@@ -1,101 +1,47 @@
 ---
-description: Grok CLI 快速开始指南，3 步通过 Code80 平台配置社区开源的 Grok AI 编程助手
+description: 使用 xAI 官方 Grok Build 通过 Code80 OpenAI 兼容中转进行 AI 编程，包含安全配置与可复现验证步骤
 ---
 
-# Grok CLI
+# Grok Build
 
-Grok CLI 是 [superagent-ai/grok-cli](https://github.com/superagent-ai/grok-cli) 提供的开源终端编程助手，可以调用 Grok 模型完成代码分析、修改、测试、搜索和多代理任务。
+Grok Build 是 xAI 发布的终端 AI 编程工具。本指南只介绍官方项目 [xai-org/grok-build](https://github.com/xai-org/grok-build) 及其官方发行版。
 
-::: info 项目身份
-这是社区维护的开源项目，不是 xAI 官方 CLI。本教程按 [grok-dev@1.1.7](https://github.com/superagent-ai/grok-cli/releases/tag/grok-dev%401.1.7) 验证。
-:::
-
-::: tip 一键让 Claude Code / Codex 配置 Grok
-不想手动执行下面的步骤时，复制这段提示词，直接粘贴到 Claude Code 或 Codex。Agent 会先检查本机环境；如果没有找到 API Key，会向你索要，不会自行猜测。
-
-```text
-帮我安装并配置 Grok CLI，通过 Code80 中转。请阅读并严格执行教程：https://docs.ai80.vip/grok/；自动检测旧版 grok 和 PATH 冲突，配置 GROK_BASE_URL=https://code.ai80.vip/v1、默认模型 grok-4.3；如果没有可访问 Grok 模型的 Code80 API Key，请先向我索要；不要使用 grok-code-fast-1，不要泄露或提交 API Key；完成后用 grok --version 和一次最小请求验证。
-```
-
-::: warning 密钥安全
-只在可信的 Claude Code / Codex 会话中提供 API Key。不要把真实 Key 写进项目文件或公开聊天记录。
+::: danger 不要混淆同名 CLI
+社区包或旧 npm 包可能也提供 `grok` 命令，但它们不是本指南的目标，配置格式和请求协议也不同。不要使用 `@vibe-kit/grok-cli`、`superagent-ai/grok-cli`、`grok-dev` 等包替代官方 Grok Build。
 :::
 
 ## 快速开始
 
-只需 3 步，即可通过 Code80 平台使用 Grok CLI。
+1. 按[官方安装](./install)安装并确认 `grok --version`。
+2. 在 Code80 创建可访问 Grok 模型的 API Key。不要将 Key 写入项目文件、Shell 历史或文档。
+3. 按[Code80 中转配置](./config)把官方 Grok Build 指向 `https://code.ai80.vip/v1`。
+4. 重启 `grok`，用 `/model` 选择可用模型。
 
-### 1. 安装 CLI 工具
+## 一键交给 Claude Code / Codex 配置
 
-macOS、Linux 以及带 Bash 环境的 Windows 可以使用官方安装脚本：
+下面的提示词用于让 Claude Code 或 Codex **协助安装和配置官方 Grok Build**。它不会把 Claude Code 或 Codex 本身切换成 Grok，也不会要求 Agent 猜测、打印或提交你的 API Key。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/superagent-ai/grok-cli/main/install.sh | bash
+```text
+请帮我安装并配置 xAI 官方 Grok Build，通过 Code80 的 OpenAI 兼容中转使用。
+
+要求：
+1. 只使用 xai-org/grok-build 的官方安装方式；检查并卸载已安装的非官方 grok CLI（例如 @vibe-kit/grok-cli、superagent-ai/grok-cli、grok-dev），不要安装同名社区包。
+2. 安装后必须确认 command -v grok 指向 ~/.grok/bin/grok 或官方安装位置，并验证 grok --version。
+3. 先检查我是否已经在 macOS Keychain 或环境变量中保存 API Key；找不到时只向我索取 Key，不要猜测，也不要把 Key 输出、提交到仓库或写入项目目录。
+4. 在 ~/.grok/config.toml 配置 Code80：模型和模型目录均使用 https://code.ai80.vip/v1，使用 OpenAI Chat Completions 协议，并将模型目录设为 /v1/models。
+5. 让 XAI_API_KEY 在启动 grok 的进程中可用，以便 /model 可以拉取远端模型列表；API Key 优先存进系统钥匙串或用户级安全配置，权限设为仅当前用户可读。
+6. 用 GET /v1/models 和一次最小 /v1/chat/completions 请求分别验证鉴权和推理；不要在输出中显示完整 Key。
+7. 如果命令找不到、/model 只有当前模型、出现 auth.x.ai 登录、或 API 返回 502/503，按官方 Grok Build 的配置和排障方式定位，说明证据与下一步，不要用非官方 CLI 规避。
 ```
 
-安装后确认命中的程序和版本：
+## 安全边界
 
-```bash
-command -v grok
-grok --version
-```
-
-脚本安装的正确路径通常是 `~/.grok/bin/grok`。其他平台和架构请查看[安装详解](./install)。
-
-### 2. 配置 Code80
-
-先在 Code80 控制台创建一个可以访问 Grok 模型的 API Key，然后创建或编辑 `~/.grok/user-settings.json`：
-
-```json
-{
-  "apiKey": "your-api-key",
-  "defaultModel": "grok-4.3"
-}
-```
-
-将 `your-api-key` 替换为你的 Code80 API Key。如果文件已有其他配置，请合并字段，不要直接覆盖。
-
-接着把中转地址加入 shell 配置。zsh 用户编辑 `~/.zshrc`，bash 用户编辑 `~/.bashrc`，加入：
-
-```bash
-export GROK_BASE_URL="https://code.ai80.vip/v1"
-```
-
-重新加载配置，以 zsh 为例：
-
-```bash
-source ~/.zshrc
-```
-
-::: warning Base URL 必须通过环境变量配置
-Grok CLI 1.1.7 不读取 `user-settings.json` 里的 `baseURL` 字段。地址必须通过 `GROK_BASE_URL` 或启动参数 `--base-url` 设置，并且要保留末尾的 `/v1`。
-:::
-
-### 3. 开始使用
-
-```bash
-cd your-project
-grok -m grok-4.3
-```
-
-也可以先做一次无头验证：
-
-```bash
-grok -m grok-4.3 -p "只回复 GROK_CLI_OK"
-```
-
-## 适用场景
-
-- 代码编写、重构与审查
-- Bug 排查、测试运行与失败分析
-- 大型仓库探索和项目文档生成
-- Web / X 搜索与多代理并行调研
-- 脚本、CI 和自动化任务中的无头调用
+- 不把真实 Key 放进 `AGENTS.md`、仓库 `.env`、文档、截图或聊天记录。
+- 优先使用 macOS Keychain、系统凭据管理器或用户级环境变量；配置文件权限应限制为当前用户。
+- 只在中转确实支持的模型上进行推理。`/v1/models` 能返回列表不等于所有模型的上游推理服务都可用。
 
 ## 下一步
 
-- [安装详解](./install) - 分平台安装、更新和同名程序排查
-- [配置详解](./config) - API Key、Base URL、模型与配置优先级
-- [快捷键速查](./shortcuts) - 常用按键、slash commands 和启动参数
-- [使用技巧](./tips) - 会话恢复、AGENTS.md、子代理与自动化
-- [常见问题](./faq) - 404 模型、旧版 CLI、认证和网络错误
+- [官方安装](./install)
+- [Code80 中转配置](./config)
+- [排障与常见问题](./faq)
