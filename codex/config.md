@@ -1,10 +1,13 @@
 ---
 description: Codex CLI 配置详解：config.toml 官方推荐与最佳实践、Code80 接入、全部参数含义与精确模型 ID（gpt-5.6-terra / gpt-5.6-sol / gpt-5.6-luna）
+outline: [2, 3]
 ---
 
 # Codex CLI 配置详解
 
-Codex 的 `config.toml` 不必把所有键都写上。官方明确说：内置默认值已经可用，只把你真正要改的键写进 `~/.codex/config.toml`。CLI、IDE 插件、桌面端共用同一套配置层。
+::: tip 一句话先记住
+Codex 的 `config.toml` 不是必须把所有键都写上。官方明确说：内置默认值已经可用；只把你真正要改的键写进 `~/.codex/config.toml`。CLI、IDE 插件、桌面端共用同一套配置层。
+:::
 
 官方参考：
 
@@ -64,16 +67,26 @@ wire_api = "responses"
 requires_openai_auth = true
 supports_websockets = false
 
+# Windows 原生运行时建议
+# [windows]
+# sandbox = "elevated"
+
 [sandbox_workspace_write]
-network_access = false
+network_access = false               # 需要装包 / 拉依赖时再开
+writable_roots = []
 
 [features]
+memories = false                     # 默认关；要跨会话记忆再开
 multi_agent = true
 shell_snapshot = true
-memories = false
+hooks = true
 
 [history]
 persistence = "save-all"
+
+[tui]
+notifications = true
+animations = true
 ```
 
 `~/.codex/auth.json`：
@@ -184,7 +197,43 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 ```
 
-接 Code80 时再叠一层自定义 provider，就是上一节的推荐配置。
+接 Code80 时不要用内置 `openai`，叠一层自定义 provider，就是文首的推荐配置。
+
+官方文档里「个人开发者从这份开始」的直连样例（走官方 OpenAI，**不是** Code80）如下。模型请写成精确 ID，不要写 `gpt-5.6`：
+
+```toml
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# ---- 日常默认（官方直连） ----
+model = "gpt-5.6-terra"
+model_provider = "openai"
+model_reasoning_effort = "medium"    # 难任务再改 high / xhigh
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+personality = "pragmatic"
+
+# Windows 原生运行时建议
+# [windows]
+# sandbox = "elevated"
+
+[sandbox_workspace_write]
+network_access = false               # 需要装包 / 拉依赖时再开
+writable_roots = []
+
+[features]
+memories = false                     # 默认关；要跨会话记忆再开
+multi_agent = true
+shell_snapshot = true
+hooks = true
+
+[history]
+persistence = "save-all"
+
+[tui]
+notifications = true
+animations = true
+```
 
 核心原则：
 
@@ -203,8 +252,9 @@ Code80 上 Codex 日常只用这三个精确 ID：
 | `gpt-5.6-terra` | 日常默认，性价比均衡 |
 | `gpt-5.6-luna` | 快、便宜、重复性任务 |
 | `gpt-5.6-sol` | 复杂编码、研究、安全审查 |
+| `gpt-6-astra` | 当前最强，端到端重推理（可选） |
 
-会话里用 `/model` 临时切换；一次性任务用 `codex --model gpt-5.6-sol`。没写 `model` 时，客户端会用账号推荐默认，接 Code80 时请显式写上。
+具体能用哪些模型，取决于账号套餐、分组权限和客户端版本。会话里用 `/model` 临时切换；一次性任务用 `codex --model gpt-5.6-sol`。没写 `model` 时，客户端会用账号推荐默认，接 Code80 时请显式写上。
 
 ## 按模块解释参数
 
@@ -242,7 +292,7 @@ Code80 上 Codex 日常只用这三个精确 ID：
 配置建议：
 
 - 日常：`model = "gpt-5.6-terra"` + `model_reasoning_effort = "medium"`
-- 大重构 / 深审查：`high` 或 `xhigh`，或换 `gpt-5.6-sol`
+- 大重构 / 深审查：`high` 或 `xhigh`，或换 `gpt-5.6-sol` / `gpt-6-astra`
 - 批量改名、格式化、小补丁：`gpt-5.6-luna`
 
 只改官方 OpenAI 的区域 / 代理时，写 `openai_base_url`，不必新建 provider。接 Code80 不要用这条，也不要改内置 `openai` provider，继续用下面的 `[model_providers.codex]`。
@@ -383,7 +433,8 @@ supports_websockets = false
 | `name` | UI 显示名 |
 | `base_url` | API 根。Responses 会拼 `/responses`。接 Code80 写根地址，**不要**加 `/v1` |
 | `env_key` | 读 API Key 的环境变量名，不要把 Key 写进 toml |
-| `wire_api` | 协议。官方 OpenAI / Codex 模型用 `responses` |
+| `env_key_instructions` | 提示用户去哪复制 Key |
+| `wire_api` | 协议。官方 OpenAI / 多数 Codex 模型用 `responses`；很多第三方兼容层用 `chat`。Responses 会拼 `/responses`，Chat 会拼 `/chat/completions` |
 | `query_params` | Azure 的 `api-version` 就写这里 |
 | `http_headers` / `env_http_headers` | 静态头 / 从环境变量取值的头 |
 | `request_max_retries` | HTTP 失败重试，默认 4，最大 100 |
@@ -410,7 +461,14 @@ Chat Completions 协议在 Codex 里已弃用，后续版本会移除。直接�
 model = "qwen2.5-coder"
 model_provider = "ollama"
 oss_provider = "ollama"
+
+[model_providers.ollama]
+name = "Ollama"
+base_url = "http://localhost:11434/v1"
+wire_api = "chat"
 ```
+
+注意：不同版本对 `wire_api` 默认值不完全一致。第三方网关务必显式写出。只换官方 API 地址时，用 `openai_base_url` 更简单。接 Code80 不要用 `openai_base_url`，用上面的 `[model_providers.codex]`。
 
 Azure：
 
@@ -453,7 +511,10 @@ query_params = { api-version = "2025-04-01-preview" }
 
 ```toml
 [tools]
-web_search = { context_size = "medium", allowed_domains = ["docs.python.org"] }
+web_search = true
+# 或对象形式：
+# web_search = { context_size = "medium", allowed_domains = ["docs.python.org"] }
+view_image = true
 ```
 
 `allowed_domains` 只限制搜索工具，不管 MCP / Apps / 沙箱命令网络。
@@ -543,6 +604,8 @@ codex features disable memories
 
 带 `--profile` 时，开关会写进对应 profile 文件。
 
+已弃用、不要新写：`features.web_search`、`features.web_search_cached`、`features.web_search_request`。改用顶层 `web_search = "cached"` / `"live"` / `"indexed"` / `"disabled"`。
+
 其它较新 / 实验开关（按需）：
 
 | 开关 | 作用 |
@@ -585,6 +648,7 @@ HTTP / SSE：
 url = "https://mcp.figma.com/mcp"
 bearer_token_env_var = "FIGMA_OAUTH_TOKEN"
 http_headers = { "X-Figma-Region" = "us-east-1" }
+# env_http_headers = { "Authorization" = "FIGMA_TOKEN" }
 # auth = "oauth"                  # oauth | chatgpt
 ```
 
@@ -619,6 +683,7 @@ TUI 里用 `/mcp` 查看当前 MCP。
 inherit = "all"                   # all | core | none
 ignore_default_excludes = false
 set = {}
+# experimental_use_profile = false
 
 [shell_environment_policy.filters]
 "PATH" = "include"
@@ -779,7 +844,61 @@ codex --config mcp_servers.context7.enabled=false
 
 就是文首那份：`gpt-5.6-terra` + `model_providers.codex`（`requires_openai_auth = true`、`supports_websockets = false`）+ `workspace-write` + `on-request`。
 
-### B. 审查模式
+### B. 官方直连 OpenAI（不走 Code80）
+
+```toml
+#:schema https://developers.openai.com/codex/config-schema.json
+
+model = "gpt-5.6-terra"
+model_provider = "openai"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+personality = "pragmatic"
+
+[sandbox_workspace_write]
+network_access = false
+
+[features]
+multi_agent = true
+shell_snapshot = true
+memories = false
+```
+
+只改官方地址时：
+
+```toml
+openai_base_url = "https://us.api.openai.com/v1"
+```
+
+### C. 接第三方 API / 反向代理
+
+```toml
+model = "gpt-5.6-terra"
+model_provider = "myproxy"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[model_providers.myproxy]
+name = "My Proxy"
+base_url = "https://api.example.com/v1"
+env_key = "MY_API_KEY"
+wire_api = "responses"
+request_max_retries = 4
+stream_idle_timeout_ms = 300000
+# env_key_instructions = "到某某控制台复制 Key"
+# query_params = { api-version = "2025-04-01-preview" }
+# http_headers = { "X-Example" = "value" }
+# env_http_headers = { "OpenAI-Organization" = "OPENAI_ORGANIZATION" }
+# stream_max_retries = 5
+# 若走 auth.json 而不是环境变量，改成 requires_openai_auth = true
+# 中转 WSS 不稳时加上 supports_websockets = false
+```
+
+接 Code80 请用文首的 `codex` provider，不要用这个通用 `myproxy` 示例直接替换。
+
+### D. 审查模式
 
 `~/.codex/review.config.toml`：
 
@@ -796,7 +915,7 @@ web_search = "cached"
 codex --profile review
 ```
 
-### C. 项目级（仓库内，需信任）
+### E. 项目级（仓库内，需信任）
 
 `.codex/config.toml`：
 
@@ -806,11 +925,16 @@ sandbox_mode = "workspace-write"
 
 [features]
 hooks = true
+
+[mcp_servers.issue_tracker]
+url = "https://mcp.example.internal"
+enabled = true
+required = false
 ```
 
 不要在这里写 `model_provider` / `openai_base_url` / `notify`。
 
-### D. CI
+### F. CI
 
 `~/.codex/ci.config.toml`：
 
@@ -826,7 +950,7 @@ model_reasoning_effort = "medium"
 codex exec --profile ci "run tests and fix failures"
 ```
 
-### E. 高频小任务
+### G. 高频小任务
 
 ```toml
 model = "gpt-5.6-luna"
@@ -879,9 +1003,15 @@ supports_websockets = false
 
 再往上：
 
-- 换模型 / 推理强度：terra 日常、luna 图快、sol 图稳
+- 换模型 / 推理强度：terra 日常、luna 图快、sol 图稳、astra 最强
 - 给信任仓库开写、给陌生目录保持只读
 - 需要时再加 MCP、自定义 provider、profile
 - 用 `AGENTS.md` 管仓库规矩，用 `config.toml` 管客户端行为
 
-最新字段以 [Configuration Reference](https://developers.openai.com/codex/config-reference) 和 [Sample Configuration](https://developers.openai.com/codex/config-sample) 为准。编辑时加上 schema 最省事。
+官方完整键表随时会随版本增加，编辑时加上 schema 最省事：
+
+```toml
+#:schema https://developers.openai.com/codex/config-schema.json
+```
+
+最新字段以 [Configuration Reference](https://developers.openai.com/codex/config-reference) 和 [Sample Configuration](https://developers.openai.com/codex/config-sample) 为准。
