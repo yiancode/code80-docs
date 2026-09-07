@@ -6,6 +6,8 @@ description: Codex CLI 安装教程，覆盖 macOS、Linux、Windows 全平台�
 
 Codex CLI 需要 Node.js 22+ 环境。以下是各平台的安装步骤。
 
+不想手工装的话，可以把[概述页的 Agent 提示词](/codex/#agent-setup)整段复制给 Claude Code、Grok Build 或其他 Agent，让它代为安装并接到 Code80。
+
 ## 前置条件
 
 - Node.js 22 或更高版本
