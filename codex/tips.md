@@ -41,18 +41,20 @@ Code80 上请写精确 ID，不要写 `gpt-5.6`：
 
 接 Code80 时在自定义 provider 写 `supports_websockets = false`。Codex 默认先走 WSS，中转转不好就会「正在重新连接 1/5 … 5/5」，一两分钟后才降级 HTTP 开始出字。不要改内置 `openai` provider，单独建 `codex`。改完彻底退出，用新对话测。
 
+Windows 上 provider 已经写对仍 `Reconnecting` 时：不要在 `C:\WINDOWS\system32` 里启动（管理员 PowerShell 的默认目录），config 里不要写 `service_tier = "fast"` / `"priority"`。有 `[projects.'c:\windows\system32']` 就删掉。
+
 ### 网络访问
 
-`workspace-write` 默认不能出网。需要装依赖、拉包时再开：
+Code80 推荐模板默认打开出网和实时搜索：
 
 ```toml
-sandbox_mode = "workspace-write"
+web_search = "live"
 
 [sandbox_workspace_write]
 network_access = true
 ```
 
-不要再写顶层 `network_access = "enabled"`，当前 schema 不认这个键。
+旧配置若仍是 `web_search = "cached"` 或 `network_access = false`，搜新闻、`curl` / `Invoke-WebRequest` 会失败。不要写顶层 `network_access = "enabled"`。Google / Reddit 在国内仍可能连不上，那是目标网站的网络问题，不是 Code80 Key。
 
 ### 推理深度调整
 

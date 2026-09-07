@@ -43,18 +43,6 @@ prompt_tty() {
   fi
 }
 
-prompt_secret() {
-  if [ -r /dev/tty ]; then
-    printf "%s" "$1" > /dev/tty
-    IFS= read -r -s "$2" < /dev/tty
-    printf "\n" > /dev/tty
-  else
-    printf "%s" "$1"
-    IFS= read -r -s "$2"
-    printf "\n"
-  fi
-}
-
 node_major() {
   node -v 2>/dev/null | sed 's/^v//' | cut -d. -f1
 }
@@ -80,7 +68,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 personality = "pragmatic"
 forced_login_method = "api"
 
@@ -92,7 +80,7 @@ requires_openai_auth = true
 supports_websockets = false
 
 [sandbox_workspace_write]
-network_access = false
+network_access = true
 writable_roots = []
 
 [features]
@@ -157,8 +145,27 @@ function commentTable(s, name) {
   );
 }
 
+function upsertTableKey(s, name, key, valueLine) {
+  const tableRe = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
+  const m = s.match(tableRe);
+  if (!m) {
+    if (!s.endsWith("\n")) s += "\n";
+    return s + "\n[" + name + "]\n" + valueLine + "\n";
+  }
+  let block = m[0];
+  const keyRe = new RegExp("^(\\s*#\\s*)?" + esc(key) + "\\s*=.*$", "m");
+  if (keyRe.test(block)) block = block.replace(keyRe, valueLine);
+  else {
+    const lines = block.split("\n");
+    lines.splice(1, 0, valueLine);
+    block = lines.join("\n");
+  }
+  return s.replace(tableRe, block);
+}
 text = upsertRootKey(text, "model_provider", 'model_provider = "codex"');
 text = upsertRootKey(text, "forced_login_method", 'forced_login_method = "api"');
+text = upsertRootKey(text, "web_search", 'web_search = "live"');
+text = upsertTableKey(text, "sandbox_workspace_write", "network_access", "network_access = true");
 text = commentTable(text, "model_providers.Custom");
 text = upsertTable(
   text,
@@ -312,7 +319,7 @@ else
   ok "已写入 Code80 推荐模板"
 fi
 chmod 600 "${CODEX_HOME}/config.toml" 2>/dev/null || true
-ok "provider=codex · ${BASE_URL} · requires_openai_auth=true · supports_websockets=false"
+ok "provider=codex · ${BASE_URL} · requires_openai_auth=true · supports_websockets=false · web_search=live · network_access=true"
 
 info "5/6 配置 API Key（只写入 auth.json，不会打印）"
 KEY="${CODE80_API_KEY:-${OPENAI_API_KEY:-}}"
@@ -331,7 +338,14 @@ if [ -z "$KEY" ] && [ -f "${CODEX_HOME}/auth.json" ]; then
 fi
 if [ "$KEY" != "__KEEP__" ]; then
   if [ -z "$KEY" ]; then
-    prompt_secret "请输入 Code80 OpenAI 分组 API Key: " KEY
+    if [ -r /dev/tty ]; then
+      printf "请粘贴或输入 Key，屏幕上会显示，核对后再回车。\n" > /dev/tty
+    else
+      printf "请粘贴或输入 Key，屏幕上会显示，核对后再回车。\n"
+    fi
+    prompt_tty "请输入 Code80 OpenAI 分组 API Key: " KEY
+    KEY="${KEY#"${KEY%%[![:space:]]*}"}"
+    KEY="${KEY%"${KEY##*[![:space:]]}"}"
   fi
   if [ -z "$KEY" ]; then
     err "未提供 API Key。可设置 CODE80_API_KEY 后重跑，或稍后编辑 ${CODEX_HOME}/auth.json"
@@ -359,7 +373,8 @@ echo ""
 echo "下一步："
 echo "  1. 彻底退出已打开的 Codex（Cmd+Q），不要只关窗口"
 echo "  2. 新开终端执行：  cd 你的项目 && codex"
-echo "  3. 用新对话测试"
+echo "  3. 模板已打开 web_search=live 和 network_access=true"
+echo "  4. 用新对话测试"
 echo ""
 echo "改回 OpenAI 官方配置："
 echo "  ${RESTORE_CMD}"

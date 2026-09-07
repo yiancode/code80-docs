@@ -9,6 +9,10 @@
 #   CODEX_RESTORE_MODE      backup | official | abort
 #                           backup=恢复安装脚本留下的备份
 #                           official=保留其他配置，只切回官方 openai provider
+#   CODEX_RESTORE_AUTH      replace | chatgpt | keep
+#                           replace=写入官方 API Key（交互输入）
+#                           chatgpt=去掉 auth.json 的 OPENAI_API_KEY，用 ChatGPT 登录
+#                           keep=保留现有 Key（Code80 Key 会 401）
 
 set -euo pipefail
 
@@ -93,13 +97,136 @@ function commentTable(s, name) {
   );
 }
 
+function commentCode80Model(s) {
+  const split = firstTableIndex(s);
+  let head = s.slice(0, split);
+  const tail = s.slice(split);
+  const re = /^(\s*#\s*)?model\s*=\s*"([^"]*)".*$/m;
+  const m = head.match(re);
+  if (!m || m[1]) return s;
+  if (/^(gpt-5\.6-(terra|sol|luna)|gpt-luna)$/.test(m[2])) {
+    head = head.replace(re, (line) => "# " + line);
+  }
+  return head + tail;
+}
+
 text = upsertRootKey(text, "model_provider", 'model_provider = "openai"');
 text = commentRootKey(text, "openai_base_url");
 text = commentRootKey(text, "forced_login_method");
 text = commentTable(text, "model_providers.codex");
 text = commentTable(text, "model_providers.Custom");
+text = commentCode80Model(text);
 fs.writeFileSync(dest, text);
 JS
+}
+
+backup_auth() {
+  local auth="${CODEX_HOME}/auth.json"
+  if [ ! -f "$auth" ]; then
+    return 1
+  fi
+  local bak="${CODEX_HOME}/auth.json.code80.bak.$(date +%Y%m%d_%H%M%S)"
+  cp "$auth" "$bak"
+  warn "已备份 auth.json 到 ${bak}"
+}
+
+write_official_auth() {
+  local key="$1"
+  local dest="${CODEX_HOME}/auth.json"
+  KEY="$key" DEST="$dest" node -e '
+    const fs = require("fs");
+    const key = process.env.KEY || "";
+    if (!key) process.exit(2);
+    fs.writeFileSync(process.env.DEST, JSON.stringify({ OPENAI_API_KEY: key }, null, 2) + "\n", { mode: 0o600 });
+  ' || return 1
+  chmod 600 "$dest" 2>/dev/null || true
+}
+
+strip_openai_api_key() {
+  local dest="${CODEX_HOME}/auth.json"
+  DEST="$dest" node -e '
+    const fs = require("fs");
+    const dest = process.env.DEST;
+    let obj = {};
+    try { obj = JSON.parse(fs.readFileSync(dest, "utf8")); } catch (e) { process.exit(2); }
+    delete obj.OPENAI_API_KEY;
+    fs.writeFileSync(dest, JSON.stringify(obj, null, 2) + "\n", { mode: 0o600 });
+  ' || return 1
+  chmod 600 "$dest" 2>/dev/null || true
+}
+
+handle_auth_after_restore() {
+  local auth="${CODEX_HOME}/auth.json"
+  echo ""
+  warn "切回官方后，请求会打到 api.openai.com。"
+  warn "auth.json 里如果还是 Code80 Key，必须先 /logout 再登录，直接提问会 401。"
+  echo "  1) 输入官方 OpenAI API Key（替换 auth.json）"
+  echo "  2) 去掉 auth.json 里的 OPENAI_API_KEY，下次用 ChatGPT 登录  [推荐]"
+  echo "  3) 先不改文件，稍后在 Codex 里 /logout 再登录"
+
+  local mode="${CODEX_RESTORE_AUTH:-}"
+  local choice=""
+  if [ -n "$mode" ]; then
+    case "$mode" in
+      replace) choice="1" ;;
+      chatgpt) choice="2" ;;
+      keep) choice="3" ;;
+      *)
+        err "CODEX_RESTORE_AUTH 只能是 replace / chatgpt / keep"
+        exit 1
+        ;;
+    esac
+  elif [ -r /dev/tty ]; then
+    prompt_tty "请选择 [1/2/3]（默认 2）: " choice
+    choice="${choice:-2}"
+  else
+    choice="2"
+    warn "无交互终端，默认 2：去掉 Code80 Key，避免 401。"
+  fi
+
+  case "$choice" in
+    1)
+      local key=""
+      if [ -r /dev/tty ]; then
+        printf "请粘贴或输入官方 OpenAI API Key，屏幕上会显示，核对后再回车。\n" > /dev/tty
+      else
+        printf "请粘贴或输入官方 OpenAI API Key，屏幕上会显示，核对后再回车。\n"
+      fi
+      prompt_tty "官方 OpenAI API Key: " key
+      key="${key#"${key%%[![:space:]]*}"}"
+      key="${key%"${key##*[![:space:]]}"}"
+      if [ -z "$key" ]; then
+        err "未提供 Key。已保留现有 auth.json。直接跑 Codex 很可能 401。"
+        return 0
+      fi
+      backup_auth || true
+      if write_official_auth "$key"; then
+        ok "已写入官方 Key 到 auth.json"
+      else
+        err "写入 auth.json 失败。请手动把官方 Key 写进 ${CODEX_HOME}/auth.json"
+      fi
+      unset key
+      ;;
+    2)
+      if [ -f "$auth" ]; then
+        backup_auth || true
+        if strip_openai_api_key; then
+          ok "已去掉 OPENAI_API_KEY。下次启动 Codex 请用 ChatGPT 登录"
+        else
+          err "无法改 auth.json。请手动删除其中的 OPENAI_API_KEY，否则跑 Codex 会 401"
+        fi
+      else
+        ok "没有 auth.json，下次启动 Codex 请用 ChatGPT 登录"
+      fi
+      ;;
+    3)
+      warn "已保留现有 auth.json。打开 Codex 后先输入 /logout，再按提示登录。"
+      ;;
+    *)
+      err "无效选择"
+      exit 1
+      ;;
+  esac
 }
 
 echo ""
@@ -109,7 +236,8 @@ echo "=============================================="
 echo ""
 warn "这会改 ~/.codex/config.toml，把 Code80 中转切回官方 OpenAI。"
 warn "不会卸载 Codex CLI，也不会删除 auth.json。"
-warn "Code80 的 API Key 不能打官方 api.openai.com，切回后请改用 ChatGPT 登录或官方 Key。"
+warn "切回后请打开 Codex，先输入 /logout，再按提示登录 ChatGPT。"
+warn "带着 Code80 Key 直接提问会 401（api.openai.com）。"
 echo ""
 
 if [ ! -f "$CONFIG" ]; then
@@ -182,7 +310,12 @@ if [ "$RESTORE_MODE" = "backup" ]; then
 else
   switch_official "$CONFIG"
   chmod 600 "$CONFIG" 2>/dev/null || true
-  ok "已切回 model_provider = openai，并注释掉 Code80 provider"
+  ok "已切回 model_provider = openai，并注释掉 Code80 provider / Code80 模型 ID"
+fi
+
+if grep -Eq '^[[:space:]]*model_provider[[:space:]]*=[[:space:]]*"openai"' "$CONFIG" \
+  || ! grep -Eq '^[[:space:]]*model_provider[[:space:]]*=' "$CONFIG"; then
+  handle_auth_after_restore
 fi
 
 echo ""
@@ -191,9 +324,10 @@ ok "恢复完成"
 echo "=============================================="
 echo ""
 echo "下一步："
-echo "  1. 彻底退出 Codex 再打开（Cmd+Q）"
-echo "  2. 用 ChatGPT 登录，或把官方 OpenAI Key 放进 auth.json"
-echo "  3. 用新对话测试"
+echo "  1. 打开 Codex，输入 /logout（必须先登出，清掉 Code80 凭据）"
+echo "  2. 按提示用 ChatGPT 登录"
+echo "  3. 用新对话测试。不要用 gpt-5.6-terra / sol / luna（Code80 模型 ID）"
+echo "  4. 若其实还想用 Code80：把刚才另存的 config.toml.code80.bak.* 拷回，或重跑安装脚本"
 echo ""
 echo "文档：${DOCS_URL}"
 echo ""

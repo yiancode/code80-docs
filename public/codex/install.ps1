@@ -1,7 +1,7 @@
 # Code80 Codex CLI 一键安装配置（Windows）
 # 用法（PowerShell）：
 #   irm https://docs.ai80.vip/codex/install.ps1 | iex
-#   irm https://docs.ai80.vip/codex/install.ps1 | iex  之前请先 $env:CODE80_API_KEY='你的Key'
+#   $env:CODE80_API_KEY='你的Key'; irm https://docs.ai80.vip/codex/install.ps1 | iex
 #   或下载后：powershell -ExecutionPolicy Bypass -File install.ps1
 #
 # 环境变量：
@@ -10,12 +10,32 @@
 #   CODEX_HOME
 #   CODE80_BASE_URL
 #   CODEX_CONFIG_MODE      keep | replace | abort
-
-[CmdletBinding()]
-param()
+#
+# 注意：不要加 [CmdletBinding()]/param()。iex 下载执行时它们不能出现在注释后面。
 
 $ErrorActionPreference = "Stop"
-try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+
+# Windows PowerShell 5.1 的 `irm | iex` 常把 UTF-8 按 Latin-1 解码，中文会乱码。
+# 用码点拼出「安装」做探针：对不上就按 UTF-8 字节重新加载。
+if (-not $PSCommandPath) {
+    $probe = ([char]0x5B89).ToString() + [char]0x88C5
+    if ('安装' -ne $probe -and -not $env:CODE80_PS1_UTF8) {
+        $env:CODE80_PS1_UTF8 = "1"
+        $url = "https://docs.ai80.vip/codex/install.ps1"
+        $bytes = (Invoke-WebRequest -UseBasicParsing -Uri $url).RawContentStream.ToArray()
+        $text = [Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)
+        Invoke-Expression $text
+        return
+    }
+}
+
+try {
+    cmd /c "chcp 65001 >nul"
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    [Console]::InputEncoding = $utf8
+    [Console]::OutputEncoding = $utf8
+    $OutputEncoding = $utf8
+} catch {}
 
 $BaseUrl = if ($env:CODE80_BASE_URL) { $env:CODE80_BASE_URL } else { "https://code.ai80.vip" }
 $Model = if ($env:CODEX_MODEL) { $env:CODEX_MODEL } else { "gpt-5.6-terra" }
@@ -48,6 +68,21 @@ function Write-Utf8([string]$Path, [string]$Content) {
     [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
 }
 
+# Windows PowerShell 5.1 调用 node -e 会剥掉参数里的双引号，改写成临时 .js 再执行。
+function Invoke-NodeJs([string]$JavaScript) {
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("code80-codex-" + [guid]::NewGuid().ToString("N") + ".js")
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($tmp, $JavaScript, $utf8NoBom)
+    try {
+        & node $tmp
+        if ($LASTEXITCODE -ne 0) {
+            throw "node 执行失败（退出码 $LASTEXITCODE）"
+        }
+    } finally {
+        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Write-CodexConfig([string]$Path) {
     $content = @"
 #:schema https://developers.openai.com/codex/config-schema.json
@@ -57,7 +92,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 personality = "pragmatic"
 forced_login_method = "api"
 windows_wsl_setup_acknowledged = true
@@ -73,7 +108,7 @@ supports_websockets = false
 sandbox = "elevated"
 
 [sandbox_workspace_write]
-network_access = false
+network_access = true
 writable_roots = []
 
 [features]
@@ -92,10 +127,72 @@ animations = true
     Write-Utf8 $Path $content
 }
 
+function Ensure-Code80WebsocketOff([string]$Path) {
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    $text = [IO.File]::ReadAllText($Path, $utf8NoBom)
+    if (-not $text.EndsWith("`n")) { $text += "`n" }
+
+    if ($text -match '(?m)^(\s*#\s*)?model_provider\s*=') {
+        $text = [regex]::Replace($text, '(?m)^(\s*#\s*)?model_provider\s*=.*$', 'model_provider = "codex"', 1)
+    } else {
+        $text = "model_provider = `"codex`"`n" + $text
+    }
+
+    if ($text -match '(?m)^(\s*#\s*)?web_search\s*=') {
+        $text = [regex]::Replace($text, '(?m)^(\s*#\s*)?web_search\s*=.*$', 'web_search = "live"', 1)
+    } else {
+        $text = $text -replace '(?m)^(\s*model_provider\s*=.*)$', "`$1`nweb_search = `"live`""
+        if ($text -notmatch '(?m)^\s*web_search\s*=') {
+            $text = "web_search = `"live`"`n" + $text
+        }
+    }
+
+    if ($text -match '(?m)^\[sandbox_workspace_write\]') {
+        if ($text -match '(?m)^(\s*#\s*)?network_access\s*=') {
+            $text = [regex]::Replace($text, '(?m)^(\s*#\s*)?network_access\s*=.*$', 'network_access = true')
+        } else {
+            $text = [regex]::Replace($text, '(?m)^(\[sandbox_workspace_write\][^\r\n]*\r?\n)', "`$1network_access = true`n")
+        }
+    } else {
+        $text = $text.TrimEnd() + "`n`n[sandbox_workspace_write]`nnetwork_access = true`nwritable_roots = []`n"
+    }
+
+    if ($text -match '(?m)^\[model_providers\.codex\]') {
+        if ($text -match '(?m)^(\s*#\s*)?supports_websockets\s*=') {
+            $text = [regex]::Replace($text, '(?m)^(\s*#\s*)?supports_websockets\s*=.*$', 'supports_websockets = false')
+        } else {
+            $text = [regex]::Replace($text, '(?m)^(\[model_providers\.codex\][^\r\n]*\r?\n)', "`$1supports_websockets = false`n")
+        }
+        if ($text -match '(?m)^(\s*#\s*)?requires_openai_auth\s*=') {
+            $text = [regex]::Replace($text, '(?m)^(\s*#\s*)?requires_openai_auth\s*=.*$', 'requires_openai_auth = true')
+        }
+    } else {
+        $text = $text.TrimEnd() + @"
+
+[model_providers.codex]
+name = "codex"
+base_url = "$BaseUrl"
+wire_api = "responses"
+requires_openai_auth = true
+supports_websockets = false
+
+"@
+    }
+
+    Write-Utf8 $Path $text
+    $verify = [IO.File]::ReadAllText($Path, $utf8NoBom)
+    if ($verify -notmatch '(?m)^\s*supports_websockets\s*=\s*false') {
+        throw "未能写入 supports_websockets = false，请手动编辑 $Path"
+    }
+    if ($verify -notmatch '(?m)^\s*model_provider\s*=\s*"codex"') {
+        throw "未能写入 model_provider = `"codex`"，请手动编辑 $Path"
+    }
+}
+
 function Apply-KeepConfig([string]$Path) {
     $env:DEST = $Path
     $env:BASE_URL = $BaseUrl
-    node -e @'
+    Invoke-NodeJs @'
 const fs = require("fs");
 const dest = process.env.DEST;
 const baseUrl = process.env.BASE_URL;
@@ -123,8 +220,27 @@ function commentTable(s, name) {
   const re = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
   return s.replace(re, (m) => m.split("\n").map((l) => (l && !l.startsWith("#") ? "# " + l : l)).join("\n"));
 }
+function upsertTableKey(s, name, key, valueLine) {
+  const tableRe = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
+  const m = s.match(tableRe);
+  if (!m) {
+    if (!s.endsWith("\n")) s += "\n";
+    return s + "\n[" + name + "]\n" + valueLine + "\n";
+  }
+  let block = m[0];
+  const keyRe = new RegExp("^(\\s*#\\s*)?" + esc(key) + "\\s*=.*$", "m");
+  if (keyRe.test(block)) block = block.replace(keyRe, valueLine);
+  else {
+    const lines = block.split("\n");
+    lines.splice(1, 0, valueLine);
+    block = lines.join("\n");
+  }
+  return s.replace(tableRe, block);
+}
 text = upsertRootKey(text, "model_provider", "model_provider = \"codex\"");
 text = upsertRootKey(text, "forced_login_method", "forced_login_method = \"api\"");
+text = upsertRootKey(text, "web_search", "web_search = \"live\"");
+text = upsertTableKey(text, "sandbox_workspace_write", "network_access", "network_access = true");
 text = commentTable(text, "model_providers.Custom");
 text = upsertTable(text, "model_providers.codex", [
   "name = \"codex\"",
@@ -239,7 +355,8 @@ if ($configMode -eq "keep" -and $hasConfig) {
     Write-CodexConfig $configPath
     Write-Ok "已写入 Code80 推荐模板"
 }
-Write-Ok "provider=codex · $BaseUrl · requires_openai_auth=true · supports_websockets=false"
+Ensure-Code80WebsocketOff $configPath
+Write-Ok "provider=codex · $BaseUrl · requires_openai_auth=true · supports_websockets=false · web_search=live · network_access=true"
 
 Write-Info "5/6 配置 API Key（只写入 auth.json，不会打印）"
 $authPath = Join-Path $CodexHome "auth.json"
@@ -255,10 +372,8 @@ if (-not $key -and (Test-Path $authPath)) {
 }
 if (-not $keepExisting) {
     if (-not $key) {
-        $secure = Read-Host "请输入 Code80 OpenAI 分组 API Key" -AsSecureString
-        $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-        try { $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
-        finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+        Write-Host "请粘贴或输入 Key，屏幕上会显示，核对后再回车。"
+        $key = (Read-Host "请输入 Code80 OpenAI 分组 API Key").Trim()
     }
     if (-not $key) {
         Write-Err "未提供 API Key。可设置 CODE80_API_KEY 后重跑，或稍后编辑 $authPath"
@@ -289,7 +404,10 @@ Write-Host ""
 Write-Host "下一步："
 Write-Host "  1. 彻底退出已打开的 Codex（任务管理器结束进程）"
 Write-Host "  2. 新开终端：  cd 你的项目;  codex"
-Write-Host "  3. 用新对话测试"
+Write-Host "     不要在 C:\WINDOWS\system32 里跑（管理员 PowerShell 的默认目录）"
+Write-Host "  3. 不要在 config.toml 写 service_tier = fast / priority，写了会 Reconnecting"
+Write-Host "  4. 模板已打开 web_search=live 和 network_access=true（可搜新闻、抓网页、装依赖）"
+Write-Host "  5. 用新对话测试。Google / Reddit 在国内仍可能连不上，和 Key 无关"
 Write-Host ""
 Write-Host "改回 OpenAI 官方配置："
 Write-Host "  $RestoreCmd"

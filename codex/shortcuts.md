@@ -37,6 +37,7 @@ codex mcp list
 - `codex resume --last`：恢复最近一次会话
 - `codex fork --last`：从最近一次会话分叉新任务
 - `codex mcp list`：查看当前 MCP 配置
+- `/logout`：交互模式里登出当前凭据。从 Code80 切回官方 OpenAI 后必须先执行，再按提示登录 ChatGPT
 
 ## 实战建议
 

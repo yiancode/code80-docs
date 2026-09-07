@@ -28,19 +28,36 @@ macOS / Linux：
 curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
 ```
 
-不想交互输入 Key 时，把变量写在管道**右边**（写在 `curl` 前面 bash 读不到）：
-
-```bash
-curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
-```
-
-Windows（PowerShell）：
+Windows（PowerShell，不是 CMD）：
 
 ```powershell
 irm https://docs.ai80.vip/codex/install.ps1 | iex
 ```
 
-脚本会安装官方 `@openai/codex`，并向你要 **OpenAI 分组** 的 API Key（只进 `auth.json`，不打印）。检测到已有配置时会问你：
+系统自带 Windows PowerShell 5.1 若出现中文乱码，改用：
+
+```powershell
+iex ([Text.Encoding]::UTF8.GetString((iwr -useb https://docs.ai80.vip/codex/install.ps1).RawContentStream.ToArray()).TrimStart([char]0xFEFF))
+```
+
+脚本会安装官方 `@openai/codex`，并**交互询问** Code80 **OpenAI 分组** 的 API Key。Windows 同样会问。输入时屏幕上会显示你打的内容，核对无误再回车，避免连打几次把 Key 写错。Key 只写入 `~/.codex/auth.json`，脚本不会再打印一遍。不要截图或把终端日志发到群里。
+
+不想交互输入时，用环境变量跳过提示：
+
+macOS / Linux（变量写在管道**右边**，写在 `curl` 前面 bash 读不到）：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
+```
+
+Windows（先设变量，再跑脚本，必须在同一窗口）：
+
+```powershell
+$env:CODE80_API_KEY='你的Key'
+irm https://docs.ai80.vip/codex/install.ps1 | iex
+```
+
+检测到已有配置时会问你：
 
 1. **接入 Code80，保留现有配置**（oh-my-codex / MCP / hooks 等继续留着）
 2. **用 Code80 推荐模板覆盖**（先备份）
@@ -49,6 +66,32 @@ irm https://docs.ai80.vip/codex/install.ps1 | iex
 无终端交互时默认选项 1。分平台说明见 [安装详解](./install)。
 
 做完方式一就可以用了，不必再做方式二或方式三。
+
+::: warning Windows：不要在 system32 里启动，也不要写 service_tier
+管理员打开 PowerShell 时，默认目录是 `C:\WINDOWS\system32`。必须先 `cd` 到你的项目再运行 `codex`，否则会 `Reconnecting`，还会把系统目录写成信任项目。
+
+config.toml 里**不要写** `service_tier = "fast"` 或 `"priority"`。Code80 不走官方这几档，写了会断流重连。已经写过的删掉这一行，并删掉：
+
+```toml
+[projects.'c:\windows\system32']
+trust_level = "trusted"
+```
+
+任务管理器结束所有 `codex` 进程后，在项目目录开新对话。
+:::
+
+::: warning Windows：旧配置若还不能搜，检查这两项
+新模板默认 `web_search = "live"`、`network_access = true`。以前装过的人若仍是 `cached` / `false`，问新闻、跑 `Invoke-WebRequest` 会报「无法连接到远程服务器」。改成：
+
+```toml
+web_search = "live"
+
+[sandbox_workspace_write]
+network_access = true
+```
+
+`network_access = true` 之后，若 `curl https://www.google.com` 仍超时，是本机到 Google 不通（国内常见），不是 Codex 没联网。`https://code.ai80.vip` 能聊就说明 API 网络是通的。换能打开的来源，或把链接发给它。
+:::
 
 想改回 OpenAI 官方（不用 Code80 中转）时：
 
@@ -60,7 +103,16 @@ curl -fsSL https://docs.ai80.vip/codex/restore.sh | bash
 irm https://docs.ai80.vip/codex/restore.ps1 | iex
 ```
 
-恢复脚本可选择：还原安装前备份，或只把 `model_provider` 切回 `openai`。Code80 的 Key 不能打官方 API，切回后请用 ChatGPT 登录或官方 Key。
+恢复脚本可选择：还原安装前备份，或只把 `model_provider` 切回 `openai`。
+
+切回官方后按这个顺序做，**不要立刻提问或跑 `codex --yolo`**：
+
+1. 打开 Codex
+2. 输入 `/logout`（清掉 `auth.json` 里的 Code80 凭据）
+3. 按提示用 ChatGPT 登录
+4. 用新对话测试
+
+漏掉 `/logout` 会带着 Code80 Key 打 `api.openai.com`，立刻 `401 Incorrect API key`。`gpt-5.6-terra` / `sol` / `luna` 是 Code80 模型 ID，官方没有。
 
 ## 方式二：交给 Agent 安装并配置 {#agent-setup}
 
@@ -82,7 +134,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 personality = "pragmatic"
 forced_login_method = "api"
 
@@ -94,7 +146,7 @@ requires_openai_auth = true
 supports_websockets = false
 
 [sandbox_workspace_write]
-network_access = false
+network_access = true
 
 5. base_url 用 https://code.ai80.vip，末尾不要加 /v1。requires_openai_auth 必须为 true（Codex 0.149.0 起 false 不会继承 auth.json，会 401）。supports_websockets 必须为 false（否则每次提问会卡在「正在重新连接 1/5 … 5/5」）。
 6. 把 API Key 写进 ~/.codex/auth.json，格式为 {"OPENAI_API_KEY": "<key>"}。macOS/Linux 执行 chmod 700 ~/.codex 和 chmod 600 ~/.codex/config.toml ~/.codex/auth.json。Windows 路径是 %USERPROFILE%\.codex\。
@@ -138,7 +190,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 forced_login_method = "api"
 
 [model_providers.codex]
@@ -147,6 +199,9 @@ base_url = "https://code.ai80.vip"
 wire_api = "responses"
 requires_openai_auth = true
 supports_websockets = false
+
+[sandbox_workspace_write]
+network_access = true
 ```
 
 日常默认用 `gpt-5.6-terra`。复杂任务换成 `gpt-5.6-sol`，图快图省用 `gpt-5.6-luna`。不要写 `gpt-5.6` 或 `gpt-luna`。
@@ -169,6 +224,8 @@ supports_websockets = false
 cd your-project
 codex
 ```
+
+Windows 先 `cd` 到项目，不要在 `C:\WINDOWS\system32` 里启动。不要在 config.toml 里写 `service_tier`。
 
 首次启动流程：选择开发环境 → 配置偏好 → 开始 AI 辅助编程。
 

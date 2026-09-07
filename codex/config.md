@@ -56,7 +56,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 personality = "pragmatic"
 forced_login_method = "api"
 
@@ -72,7 +72,7 @@ supports_websockets = false
 # sandbox = "elevated"
 
 [sandbox_workspace_write]
-network_access = false               # 需要装包 / 拉依赖时再开
+network_access = true                # 搜新闻、抓网页、装依赖；不需要出网再改 false
 writable_roots = []
 
 [features]
@@ -105,6 +105,17 @@ chmod 600 ~/.codex/config.toml ~/.codex/auth.json
 ```
 
 改完必须**彻底退出再打开**（macOS 用 Cmd+Q，Windows 结束进程），并用**新对话**测试。只关窗口不够，旧会话可能还绑着原来的连接方式。
+
+::: warning Windows 不要写 service_tier，也不要在 system32 启动
+接 Code80 时不要加 `service_tier = "fast"` / `"priority"` / `"flex"`。官方这几档中转不认，会话里会反复切档，随后 `Reconnecting`、`Stream disconnected`。
+
+管理员 PowerShell 默认在 `C:\WINDOWS\system32`。必须 `cd` 到项目再开 `codex`。已经跑过的话，删掉 config 里的：
+
+```toml
+[projects.'c:\windows\system32']
+trust_level = "trusted"
+```
+:::
 
 ::: tip 为什么默认是 terra
 官方 Config basics 把「人们最常改」的组合写成：日常写代码用 `workspace-write` + `on-request`。模型侧，Terra 是 GPT-5.6 里性价比均衡的一档，适合作为个人默认。难任务再换成 `gpt-5.6-sol`，或把 `model_reasoning_effort` 调到 `high` / `xhigh`。
@@ -218,7 +229,7 @@ personality = "pragmatic"
 # sandbox = "elevated"
 
 [sandbox_workspace_write]
-network_access = false               # 需要装包 / 拉依赖时再开
+network_access = false               # 需要装包、抓网页、搜新闻时再改 true
 writable_roots = []
 
 [features]
@@ -268,7 +279,7 @@ Code80 上 Codex 日常只用这三个精确 ID：
 | `review_model` | string | 未设置 = 用当前会话模型 | `/review` 专用模型，审查可写成 `gpt-5.6-sol` |
 | `model_provider` | string | `"openai"`；接 Code80 用 `"codex"` | 使用哪个 `[model_providers.<id>]`。全文件只能有一个 |
 | `oss_provider` | string | 未设置则提示 | `--oss` 时的本地开源后端，如 `"ollama"` |
-| `service_tier` | string | 未设置 | 服务档，如 `"fast"` / `"flex"` / `"priority"`，取决于模型目录 |
+| `service_tier` | string | 未设置 | 官方服务档，如 `"fast"` / `"flex"` / `"priority"`。**接 Code80 不要写**，写了会断流重连 |
 | `personality` | `none` / `friendly` / `pragmatic` | 未设置 | 沟通风格；会话里可用 `/personality` 改 |
 | `model_reasoning_effort` | `minimal` / `low` / `medium` / `high` / `xhigh` | 跟模型走 | 思考强度。越高越慢、越贵、越稳 |
 | `plan_mode_reasoning_effort` | 同上 + `none` | 未设置 | 规划模式单独覆盖 |
@@ -506,6 +517,12 @@ query_params = { api-version = "2025-04-01-preview" }
 | `disabled` | 去掉搜索工具 |
 
 `--yolo` 或 `danger-full-access` 时，搜索默认变成 `live`。
+
+接 Code80 时注意：
+
+- 推荐模板用 `web_search = "live"`（实时检索）和 `network_access = true`（命令可出网）。两者不是同一开关。
+- 旧配置若仍是 `cached` + `network_access = false`，问「今天新闻」或跑 `Invoke-WebRequest` 会失败。
+- Google / Reddit 等在国内仍可能连不上，这不是 API Key 问题。
 
 更细的搜索工具还可以写：
 
@@ -842,7 +859,7 @@ codex --config mcp_servers.context7.enabled=false
 
 ### A. Code80 日常开发（推荐起点）
 
-就是文首那份：`gpt-5.6-terra` + `model_providers.codex`（`requires_openai_auth = true`、`supports_websockets = false`）+ `workspace-write` + `on-request`。
+就是文首那份：`gpt-5.6-terra` + `model_providers.codex`（`requires_openai_auth = true`、`supports_websockets = false`）+ `workspace-write` + `on-request` + `web_search = "live"` + `network_access = true`。
 
 ### B. 官方直连 OpenAI（不走 Code80）
 
@@ -965,8 +982,8 @@ sandbox_mode = "workspace-write"
 2. 把 provider / 凭据写进项目级 `.codex/config.toml` → 被静默忽略并警告。
 3. 继续用 `[profiles.xxx]` → 0.134.0+ 已失效，改独立文件。
 4. 第三方网关不写 `wire_api = "responses"` → 协议混用直接报错。
-5. `web_search` 默认是 `cached` 不是实时。要最新网页写 `"live"`。
-6. `workspace-write` 默认不能出网。装依赖要显式 `network_access = true`。
+5. Code80 推荐模板用 `web_search = "live"`。写成 `"cached"` 就不是实时搜索。
+6. Code80 推荐模板用 `network_access = true`。旧配置若是 `false`，`Invoke-WebRequest` / `curl` 会报无法连接。
 7. `danger-full-access` / `--yolo` 没有沙箱。只在容器 / CI runner 里用。
 8. `experimental_instructions_file` 已改名为 `model_instructions_file`。
 9. 不必把 sample 里上百个键全抄进去。只写要覆盖的。
@@ -991,7 +1008,7 @@ model_provider = "codex"
 model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-web_search = "cached"
+web_search = "live"
 
 [model_providers.codex]
 name = "codex"
@@ -999,6 +1016,9 @@ base_url = "https://code.ai80.vip"
 wire_api = "responses"
 requires_openai_auth = true
 supports_websockets = false
+
+[sandbox_workspace_write]
+network_access = true
 ```
 
 再往上：

@@ -4,12 +4,31 @@
 #
 # CODEX_HOME
 # CODEX_RESTORE_MODE   backup | official | abort
-
-[CmdletBinding()]
-param()
+# CODEX_RESTORE_AUTH   replace | chatgpt | keep
+#
+# 不要加 [CmdletBinding()]/param()。iex 下载执行时它们不能出现在注释后面。
 
 $ErrorActionPreference = "Stop"
-try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+
+if (-not $PSCommandPath) {
+    $probe = ([char]0x5B89).ToString() + [char]0x88C5
+    if ('安装' -ne $probe -and -not $env:CODE80_PS1_UTF8) {
+        $env:CODE80_PS1_UTF8 = "1"
+        $url = "https://docs.ai80.vip/codex/restore.ps1"
+        $bytes = (Invoke-WebRequest -UseBasicParsing -Uri $url).RawContentStream.ToArray()
+        $text = [Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)
+        Invoke-Expression $text
+        return
+    }
+}
+
+try {
+    cmd /c "chcp 65001 >nul"
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    [Console]::InputEncoding = $utf8
+    [Console]::OutputEncoding = $utf8
+    $OutputEncoding = $utf8
+} catch {}
 
 $CodexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
 $DocsUrl = "https://docs.ai80.vip/codex/"
@@ -19,6 +38,20 @@ function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -Foreground
 function Write-Ok([string]$Message) { Write-Host "[OK]   $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
 function Write-Err([string]$Message) { Write-Host "[ERR]  $Message" -ForegroundColor Red }
+
+function Invoke-NodeJs([string]$JavaScript) {
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("code80-codex-" + [guid]::NewGuid().ToString("N") + ".js")
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($tmp, $JavaScript, $utf8NoBom)
+    try {
+        & node $tmp
+        if ($LASTEXITCODE -ne 0) {
+            throw "node 执行失败（退出码 $LASTEXITCODE）"
+        }
+    } finally {
+        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    }
+}
 
 function Get-LatestBackup {
     $marker = Join-Path $CodexHome ".code80-last-backup"
@@ -34,7 +67,7 @@ function Get-LatestBackup {
 
 function Switch-Official([string]$Path) {
     $env:DEST = $Path
-    node -e @'
+    Invoke-NodeJs @'
 const fs = require("fs");
 const dest = process.env.DEST;
 let text = fs.readFileSync(dest, "utf8");
@@ -62,13 +95,130 @@ function commentTable(s, name) {
   const re = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
   return s.replace(re, (m) => m.split("\n").map((l) => (l && !l.startsWith("#") ? "# " + l : l)).join("\n"));
 }
+function commentCode80Model(s) {
+  const split = firstTableIndex(s);
+  let head = s.slice(0, split);
+  const tail = s.slice(split);
+  const re = /^(\s*#\s*)?model\s*=\s*"([^"]*)".*$/m;
+  const m = head.match(re);
+  if (!m || m[1]) return s;
+  if (/^(gpt-5\.6-(terra|sol|luna)|gpt-luna)$/.test(m[2])) {
+    head = head.replace(re, (line) => "# " + line);
+  }
+  return head + tail;
+}
 text = upsertRootKey(text, "model_provider", "model_provider = \"openai\"");
 text = commentRootKey(text, "openai_base_url");
 text = commentRootKey(text, "forced_login_method");
 text = commentTable(text, "model_providers.codex");
 text = commentTable(text, "model_providers.Custom");
+text = commentCode80Model(text);
 fs.writeFileSync(dest, text);
 '@
+}
+
+function Backup-Auth {
+    $auth = Join-Path $CodexHome "auth.json"
+    if (-not (Test-Path $auth)) { return $false }
+    $bak = Join-Path $CodexHome ("auth.json.code80.bak." + (Get-Date -Format "yyyyMMdd_HHmmss"))
+    Copy-Item $auth $bak
+    Write-Warn "已备份 auth.json 到 $bak"
+    return $true
+}
+
+function Write-OfficialAuth([string]$Key) {
+    $dest = Join-Path $CodexHome "auth.json"
+    $env:KEY = $Key
+    $env:DEST = $dest
+    try {
+        Invoke-NodeJs @'
+const fs = require("fs");
+const key = process.env.KEY || "";
+if (!key) process.exit(2);
+fs.writeFileSync(process.env.DEST, JSON.stringify({ OPENAI_API_KEY: key }, null, 2) + "\n");
+'@
+        return $true
+    } catch {
+        return $false
+    } finally {
+        $env:KEY = $null
+    }
+}
+
+function Strip-OpenAiApiKey {
+    $dest = Join-Path $CodexHome "auth.json"
+    $env:DEST = $dest
+    try {
+        Invoke-NodeJs @'
+const fs = require("fs");
+const dest = process.env.DEST;
+let obj = {};
+try { obj = JSON.parse(fs.readFileSync(dest, "utf8")); } catch (e) { process.exit(2); }
+delete obj.OPENAI_API_KEY;
+fs.writeFileSync(dest, JSON.stringify(obj, null, 2) + "\n");
+'@
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Invoke-AuthAfterRestore {
+    $auth = Join-Path $CodexHome "auth.json"
+    Write-Host ""
+    Write-Warn "切回官方后，请求会打到 api.openai.com。"
+    Write-Warn "auth.json 里如果还是 Code80 Key，必须先 /logout 再登录，直接提问会 401。"
+    Write-Host "  1) 输入官方 OpenAI API Key（替换 auth.json）"
+    Write-Host "  2) 去掉 auth.json 里的 OPENAI_API_KEY，下次用 ChatGPT 登录  [推荐]"
+    Write-Host "  3) 先不改文件，稍后在 Codex 里 /logout 再登录"
+
+    $mode = $env:CODEX_RESTORE_AUTH
+    $choice = ""
+    if ($mode) {
+        switch ($mode) {
+            "replace" { $choice = "1" }
+            "chatgpt" { $choice = "2" }
+            "keep" { $choice = "3" }
+            default { Write-Err "CODEX_RESTORE_AUTH 只能是 replace / chatgpt / keep"; exit 1 }
+        }
+    } else {
+        $choice = Read-Host "请选择 [1/2/3]（默认 2）"
+        if (-not $choice) { $choice = "2" }
+    }
+
+    switch ($choice) {
+        "1" {
+            Write-Host "请粘贴或输入官方 OpenAI API Key，屏幕上会显示，核对后再回车。"
+            $key = (Read-Host "官方 OpenAI API Key").Trim()
+            if (-not $key) {
+                Write-Err "未提供 Key。已保留现有 auth.json。直接跑 Codex 很可能 401。"
+                return
+            }
+            Backup-Auth | Out-Null
+            if (Write-OfficialAuth $key) {
+                Write-Ok "已写入官方 Key 到 auth.json"
+            } else {
+                Write-Err "写入 auth.json 失败。请手动把官方 Key 写进 $auth"
+            }
+            $key = $null
+        }
+        "2" {
+            if (Test-Path $auth) {
+                Backup-Auth | Out-Null
+                if (Strip-OpenAiApiKey) {
+                    Write-Ok "已去掉 OPENAI_API_KEY。下次启动 Codex 请用 ChatGPT 登录"
+                } else {
+                    Write-Err "无法改 auth.json。请手动删除其中的 OPENAI_API_KEY，否则跑 Codex 会 401"
+                }
+            } else {
+                Write-Ok "没有 auth.json，下次启动 Codex 请用 ChatGPT 登录"
+            }
+        }
+        "3" {
+            Write-Warn "已保留现有 auth.json。打开 Codex 后先输入 /logout，再按提示登录。"
+        }
+        default { Write-Err "无效选择"; exit 1 }
+    }
 }
 
 Write-Host ""
@@ -78,7 +228,8 @@ Write-Host "=============================================="
 Write-Host ""
 Write-Warn "这会改 config.toml，把 Code80 中转切回官方 OpenAI。"
 Write-Warn "不会卸载 Codex CLI，也不会删除 auth.json。"
-Write-Warn "Code80 的 API Key 不能打官方 api.openai.com，切回后请改用 ChatGPT 登录或官方 Key。"
+Write-Warn "切回后请打开 Codex，先输入 /logout，再按提示登录 ChatGPT。"
+Write-Warn "带着 Code80 Key 直接提问会 401（api.openai.com）。"
 Write-Host ""
 
 if (-not (Test-Path $Config)) {
@@ -128,7 +279,12 @@ if ($restoreMode -eq "backup") {
     Write-Ok "已从备份恢复：$backupFile"
 } else {
     Switch-Official $Config
-    Write-Ok "已切回 model_provider = openai，并注释掉 Code80 provider"
+    Write-Ok "已切回 model_provider = openai，并注释掉 Code80 provider / Code80 模型 ID"
+}
+
+$raw = Get-Content -Raw $Config
+if ($raw -match '(?m)^\s*model_provider\s*=\s*"openai"' -or $raw -notmatch '(?m)^\s*model_provider\s*=') {
+    Invoke-AuthAfterRestore
 }
 
 Write-Host ""
@@ -136,6 +292,10 @@ Write-Host "=============================================="
 Write-Ok "恢复完成"
 Write-Host "=============================================="
 Write-Host ""
-Write-Host "下一步：彻底退出 Codex，用 ChatGPT 登录或官方 Key，再用新对话测试。"
+Write-Host "下一步："
+Write-Host "  1. 打开 Codex，输入 /logout（必须先登出，清掉 Code80 凭据）"
+Write-Host "  2. 按提示用 ChatGPT 登录"
+Write-Host "  3. 用新对话测试。不要用 gpt-5.6-terra / sol / luna（Code80 模型 ID）"
+Write-Host "  4. 若其实还想用 Code80：把刚才另存的 config.toml.code80.bak.* 拷回，或重跑安装脚本"
 Write-Host "文档：$DocsUrl"
 Write-Host ""
