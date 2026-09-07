@@ -37,7 +37,10 @@ irm https://docs.ai80.vip/codex/install.ps1 | iex
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-也可以下载 [install.ps1](/codex/install.ps1) 和 [install.cmd](/codex/install.cmd) 到同一目录，双击 `install.cmd`。
+也可以把下面两个文件下到同一目录，双击 `install.cmd`：
+
+- https://docs.ai80.vip/codex/install.ps1
+- https://docs.ai80.vip/codex/install.cmd
 
 脚本会：
 
