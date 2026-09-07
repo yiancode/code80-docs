@@ -1,12 +1,57 @@
 ---
-description: Codex CLI 安装教程，覆盖 macOS、Linux、Windows 全平台，Node.js 22+ 环境要求与 bubblewrap 配置
+description: Codex CLI 安装教程：macOS/Windows 一键脚本、Node.js 22+、bubblewrap 与手工安装步骤
 ---
 
 # Codex CLI 安装详解
 
-Codex CLI 需要 Node.js 22+ 环境。以下是各平台的安装步骤。
+Codex CLI 需要 Node.js 22+ 环境。最快的方式是跑一键脚本：装官方 CLI、写入 Code80 推荐配置、把 Key 放进 `auth.json`。
 
-不想手工装的话，可以把[概述页的 Agent 提示词](/codex/#agent-setup)整段复制给 Claude Code、Grok Build 或其他 Agent，让它代为安装并接到 Code80。
+## 一键安装配置
+
+### macOS / Linux
+
+在终端执行：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+```
+
+脚本会通过 `/dev/tty` 向你要 Code80 **OpenAI 分组** 的 API Key，不会把 Key 打到屏幕上。也可以先导出再跑：
+
+```bash
+export CODE80_API_KEY="你的Key"
+curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+```
+
+### Windows
+
+在 **PowerShell**（不是 CMD）执行：
+
+```powershell
+irm https://docs.ai80.vip/codex/install.ps1 | iex
+```
+
+若提示无法运行脚本：
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+也可以下载 [install.ps1](/codex/install.ps1) 和 [install.cmd](/codex/install.cmd) 到同一目录，双击 `install.cmd`。
+
+脚本会：
+
+1. 检查 / 安装 Node.js 22+
+2. `npm install -g @openai/codex`
+3. 写入 `~/.codex/config.toml`（已有文件会先备份）
+4. 把 Key 写入 `~/.codex/auth.json`，权限收紧为当前用户
+5. 固定 `requires_openai_auth = true`、`supports_websockets = false`，避免 0.149.0 的 401 和「正在重新连接」
+
+默认模型是 `gpt-5.6-terra`。不要写 `gpt-5.6` 或 `gpt-luna`。
+
+配完必须彻底退出 Codex 再开，并用**新对话**测试。只关窗口不够。
+
+不想跑脚本，也可以把[概述页的 Agent 提示词](/codex/#agent-setup)复制给 Claude Code / Grok，让 Agent 代装。
 
 ## 前置条件
 

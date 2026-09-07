@@ -23,6 +23,17 @@ nvm use 22
 sudo apt-get install bubblewrap
 ```
 
+### 一键脚本卡住或要不到 Key
+
+`curl ... | bash` 时脚本用 `/dev/tty` 读 Key。如果在无 TTY 的环境跑，先导出再执行：
+
+```bash
+export CODE80_API_KEY="你的Key"
+curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+```
+
+Windows 请在 PowerShell 里运行 `irm ... | iex`，不要用 CMD。脚本会备份已有 `config.toml`，不会覆盖 `auth.json` 除非你选择重写。
+
 ## 配置问题
 
 ### 配置后连接失败

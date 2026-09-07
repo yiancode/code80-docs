@@ -4,7 +4,23 @@ description: Codex CLI 快速开始指南：3 步手工配置，或复制提示�
 
 # Codex CLI
 
-OpenAI 官方 AI 编程助手命令行工具。不想手工改配置时，把[下面的提示词](#agent-setup)整段复制给 Claude Code、Grok Build 或其他 Agent，让它代为安装并接到 Code80。
+OpenAI 官方 AI 编程助手命令行工具。最快的方式是跑一键脚本，或把[Agent 提示词](#agent-setup)复制给 Claude Code / Grok 代装。
+
+## 一键安装配置
+
+macOS / Linux：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+```
+
+Windows（PowerShell）：
+
+```powershell
+irm https://docs.ai80.vip/codex/install.ps1 | iex
+```
+
+脚本会安装官方 `@openai/codex`、写入 Code80 推荐配置，并向你要 **OpenAI 分组** 的 API Key（只进 `auth.json`，不打印）。分平台说明见 [安装详解](./install)。
 
 ## 快速开始
 
@@ -127,7 +143,7 @@ Agent 找不到现有密钥时会向你要 Code80 **OpenAI 分组** 的 API Key�
 
 ## 下一步
 
-- [安装详解](./install) - 分平台的详细安装步骤，也可把上面的提示词交给 Agent
+- [安装详解](./install) - 一键脚本与分平台步骤
 - [配置详解](./config) - 完整的配置文件说明
 - [快捷键速查](./shortcuts) - 常用快捷键与高频交互命令
 - [使用技巧](./tips) - 高级用法和效率提升
