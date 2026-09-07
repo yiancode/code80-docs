@@ -1,5 +1,5 @@
 ---
-description: Codex CLI 快速开始指南，3 步通过 Code80 平台配置 OpenAI AI 编程助手
+description: Codex CLI 快速开始指南，3 步通过 Code80 配置 gpt-5.6-terra / gpt-5.6-sol / gpt-5.6-luna
 ---
 
 # Codex CLI
@@ -27,19 +27,27 @@ mkdir -p ~/.codex
 编辑 `~/.codex/config.toml`：
 
 ```toml
-model_provider = "Custom"
-model = "gpt-5.4"
-preferred_auth_method = "apikey"
-model_reasoning_effort = "medium"
-network_access = "enabled"
-disable_response_storage = true
-model_verbosity = "high"
+#:schema https://developers.openai.com/codex/config-schema.json
 
-[model_providers.Custom]
-name = "Custom"
+model = "gpt-5.6-terra"
+model_provider = "codex"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+forced_login_method = "api"
+
+[model_providers.codex]
+name = "codex"
 base_url = "https://code.ai80.vip"
 wire_api = "responses"
+requires_openai_auth = true
+supports_websockets = false
 ```
+
+日常默认用 `gpt-5.6-terra`。复杂任务换成 `gpt-5.6-sol`，图快图省用 `gpt-5.6-luna`。不要写 `gpt-5.6` 或 `gpt-luna`。
+
+`requires_openai_auth = true` 让 0.149.0+ 继续读 `auth.json`；`supports_websockets = false` 避免每次提问先卡「正在重新连接」。完整说明见 [配置详解](./config)。
 
 编辑 `~/.codex/auth.json`：
 
