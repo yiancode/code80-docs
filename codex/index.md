@@ -24,6 +24,12 @@ macOS / Linux：
 curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
 ```
 
+不想交互输入 Key 时，把变量写在管道**右边**（写在 `curl` 前面 bash 读不到）：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
+```
+
 Windows（PowerShell）：
 
 ```powershell

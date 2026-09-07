@@ -16,11 +16,10 @@ Codex CLI 需要 Node.js 22+ 环境。最快的方式是跑一键脚本：装官
 curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
 ```
 
-脚本会通过 `/dev/tty` 向你要 Code80 **OpenAI 分组** 的 API Key，不会把 Key 打到屏幕上。也可以先导出再跑：
+脚本会通过 `/dev/tty` 向你要 Code80 **OpenAI 分组** 的 API Key，不会把 Key 打到屏幕上。不想交互时，把变量写在管道**右边**（写在 `curl` 前面 bash 读不到）：
 
 ```bash
-export CODE80_API_KEY="你的Key"
-curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
 ```
 
 ### Windows

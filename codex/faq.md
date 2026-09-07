@@ -25,11 +25,10 @@ sudo apt-get install bubblewrap
 
 ### 一键脚本卡住或要不到 Key
 
-`curl ... | bash` 时脚本用 `/dev/tty` 读 Key。如果在无 TTY 的环境跑，先导出再执行：
+`curl ... | bash` 时脚本用 `/dev/tty` 读 Key。无 TTY 或不想交互时，把变量写在管道右边（写在 `curl` 前面 bash 读不到）：
 
 ```bash
-export CODE80_API_KEY="你的Key"
-curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
 ```
 
 Windows 请在 PowerShell 里运行 `irm ... | iex`，不要用 CMD。脚本会备份已有 `config.toml`，不会覆盖 `auth.json` 除非你选择重写。

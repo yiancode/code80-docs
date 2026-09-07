@@ -2,9 +2,10 @@
 # Code80 Codex CLI 一键安装配置（macOS / Linux）
 # 用法：
 #   curl -fsSL https://docs.ai80.vip/codex/install.sh | bash
+#   curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
 #   或下载后：bash install.sh
 #
-# 可用环境变量：
+# 可用环境变量（必须传给 bash，不能写在 curl 前面）：
 #   CODE80_API_KEY / OPENAI_API_KEY   跳过交互输入
 #   CODEX_MODEL                       默认 gpt-5.6-terra
 #   CODEX_HOME                        默认 ~/.codex
