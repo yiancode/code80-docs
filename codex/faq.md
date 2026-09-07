@@ -31,7 +31,23 @@ sudo apt-get install bubblewrap
 curl -fsSL https://docs.ai80.vip/codex/install.sh | CODE80_API_KEY='你的Key' bash
 ```
 
-Windows 请在 PowerShell 里运行 `irm ... | iex`，不要用 CMD。脚本会备份已有 `config.toml`，不会覆盖 `auth.json` 除非你选择重写。
+Windows 请在 PowerShell 里运行 `irm ... | iex`，不要用 CMD。
+
+已有 `config.toml` 时脚本会问：保留现有配置（oh-my-codex 等）只改接入，还是覆盖成推荐模板。无交互时默认保留。覆盖前会备份。
+
+### 一键脚本把我的 oh-my-codex 弄没了
+
+先看 `~/.codex/config.toml.bak.*` 或 `.code80-last-backup`。然后：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/restore.sh | bash
+```
+
+选 **1）恢复安装前的备份**。Windows 用 `irm https://docs.ai80.vip/codex/restore.ps1 | iex`。
+
+### 想不用 Code80、改回官方 OpenAI
+
+同样跑恢复脚本，选 **2）只切回官方 openai provider**。之后用 ChatGPT 登录或官方 Key。Code80 的 Key 打不通 `api.openai.com`。
 
 ## 配置问题
 

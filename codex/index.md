@@ -18,6 +18,10 @@ OpenAI 官方 AI 编程助手命令行工具。通过 Code80 接入时，下面�
 
 ## 方式一：一键脚本安装（推荐）
 
+::: danger 会改你现有的 Codex 配置
+脚本会改 `~/.codex/config.toml` 以接入 Code80。已有文件会先备份，但若选择**覆盖**，oh-my-codex、MCP、hooks 等自定义内容会从当前文件里消失。已装 oh-my-codex 的人请选 **保留现有配置，只改接入**。不确定就先备份，或用下面的恢复脚本改回官方 OpenAI。
+:::
+
 macOS / Linux：
 
 ```bash
@@ -36,9 +40,27 @@ Windows（PowerShell）：
 irm https://docs.ai80.vip/codex/install.ps1 | iex
 ```
 
-脚本会安装官方 `@openai/codex`、写入 Code80 推荐配置，并向你要 **OpenAI 分组** 的 API Key（只进 `auth.json`，不打印）。分平台说明见 [安装详解](./install)。
+脚本会安装官方 `@openai/codex`，并向你要 **OpenAI 分组** 的 API Key（只进 `auth.json`，不打印）。检测到已有配置时会问你：
+
+1. **接入 Code80，保留现有配置**（oh-my-codex / MCP / hooks 等继续留着）
+2. **用 Code80 推荐模板覆盖**（先备份）
+3. **取消**
+
+无终端交互时默认选项 1。分平台说明见 [安装详解](./install)。
 
 做完方式一就可以用了，不必再做方式二或方式三。
+
+想改回 OpenAI 官方（不用 Code80 中转）时：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/restore.sh | bash
+```
+
+```powershell
+irm https://docs.ai80.vip/codex/restore.ps1 | iex
+```
+
+恢复脚本可选择：还原安装前备份，或只把 `model_provider` 切回 `openai`。Code80 的 Key 不能打官方 API，切回后请用 ChatGPT 登录或官方 Key。
 
 ## 方式二：交给 Agent 安装并配置 {#agent-setup}
 
@@ -165,7 +187,7 @@ codex
 
 ## 下一步
 
-- [安装详解](./install) - 一键脚本与分平台步骤
+- [安装详解](./install) - 一键脚本、恢复官方配置与分平台步骤
 - [配置详解](./config) - 完整的配置文件说明
 - [快捷键速查](./shortcuts) - 常用快捷键与高频交互命令
 - [使用技巧](./tips) - 高级用法和效率提升

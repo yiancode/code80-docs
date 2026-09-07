@@ -1,10 +1,18 @@
 ---
-description: Codex CLI 安装教程：macOS/Windows 一键脚本、Node.js 22+、bubblewrap 与手工安装步骤
+description: Codex CLI 安装教程：一键脚本（可选保留 oh-my-codex）、恢复官方 OpenAI 配置、Node.js 22+
 ---
 
 # Codex CLI 安装详解
 
-Codex CLI 需要 Node.js 22+ 环境。最快的方式是跑一键脚本：装官方 CLI、写入 Code80 推荐配置、把 Key 放进 `auth.json`。
+Codex CLI 需要 Node.js 22+ 环境。最快的方式是跑一键脚本：装官方 CLI、接入 Code80、把 Key 放进 `auth.json`。
+
+::: danger 一键脚本会改现有配置，请谨慎使用
+它会修改 `~/.codex/config.toml`。已有文件会先备份成 `config.toml.bak.时间戳`。
+
+- 已装 **oh-my-codex**，或有 MCP / hooks / 自定义 provider：运行时选 **1）保留现有配置，只接入 Code80**
+- 选 **2）覆盖** 会换成 Code80 推荐模板，当前文件里的自定义内容会没掉（备份还在）
+- 想改回 OpenAI 官方，用下面的[恢复脚本](#恢复-openai-官方配置)，不要重装一遍 Codex
+:::
 
 ## 一键安装配置
 
@@ -45,15 +53,41 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 
 1. 检查 / 安装 Node.js 22+
 2. `npm install -g @openai/codex`
-3. 写入 `~/.codex/config.toml`（已有文件会先备份）
+3. 备份已有 `config.toml`，然后按你的选择：保留现有配置只改 Code80 接入，或写入推荐模板
 4. 把 Key 写入 `~/.codex/auth.json`，权限收紧为当前用户
 5. 固定 `requires_openai_auth = true`、`supports_websockets = false`，避免 0.149.0 的 401 和「正在重新连接」
 
-默认模型是 `gpt-5.6-terra`。不要写 `gpt-5.6` 或 `gpt-luna`。
+覆盖模式下默认模型是 `gpt-5.6-terra`。保留模式下不改你原来的 `model`。不要写 `gpt-5.6` 或 `gpt-luna`。
 
 配完必须彻底退出 Codex 再开，并用**新对话**测试。只关窗口不够。
 
 不想跑脚本，也可以把[概述页的 Agent 提示词](/codex/#agent-setup)复制给 Claude Code / Grok，让 Agent 代装。
+
+## 恢复 OpenAI 官方配置
+
+安装脚本只改接入，不卸载 `codex`。若要继续用 OpenAI 官方（ChatGPT 登录或官方 API Key），跑恢复脚本：
+
+macOS / Linux：
+
+```bash
+curl -fsSL https://docs.ai80.vip/codex/restore.sh | bash
+```
+
+Windows（PowerShell）：
+
+```powershell
+irm https://docs.ai80.vip/codex/restore.ps1 | iex
+```
+
+会先把当前配置另存一份，再让你选：
+
+1. **恢复安装前的备份**（oh-my-codex 等也会回来）
+2. **只切回官方 `openai` provider**，保留其他配置
+3. **取消**
+
+::: warning Code80 Key 不能打官方 API
+切回官方后，请用 ChatGPT 登录，或把官方 OpenAI Key 放进 `auth.json`。不要继续用 Code80 的 Key 去请求 `api.openai.com`。
+:::
 
 ## 前置条件
 

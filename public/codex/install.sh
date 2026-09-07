@@ -7,9 +7,12 @@
 #
 # 可用环境变量（必须传给 bash，不能写在 curl 前面）：
 #   CODE80_API_KEY / OPENAI_API_KEY   跳过交互输入
-#   CODEX_MODEL                       默认 gpt-5.6-terra
+#   CODEX_MODEL                       默认 gpt-5.6-terra（覆盖模式才改模型）
 #   CODEX_HOME                        默认 ~/.codex
 #   CODE80_BASE_URL                   默认 https://code.ai80.vip
+#   CODEX_CONFIG_MODE                 keep | replace | abort
+#                                     keep=保留 oh-my-codex 等现有配置，只接入 Code80
+#                                     replace=用推荐模板覆盖（会先备份）
 
 set -euo pipefail
 
@@ -17,6 +20,7 @@ BASE_URL="${CODE80_BASE_URL:-https://code.ai80.vip}"
 MODEL="${CODEX_MODEL:-gpt-5.6-terra}"
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 DOCS_URL="https://docs.ai80.vip/codex/"
+RESTORE_CMD="curl -fsSL https://docs.ai80.vip/codex/restore.sh | bash"
 
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'
@@ -58,34 +62,15 @@ node_major() {
 json_escape_write_auth() {
   local key="$1"
   local dest="$2"
-  if command -v node >/dev/null 2>&1; then
-    KEY="$key" DEST="$dest" node -e '
-      const fs = require("fs");
-      const key = process.env.KEY || "";
-      if (!key) process.exit(2);
-      fs.writeFileSync(process.env.DEST, JSON.stringify({ OPENAI_API_KEY: key }, null, 2) + "\n", { mode: 0o600 });
-    '
-    return
-  fi
-  if command -v python3 >/dev/null 2>&1; then
-    KEY="$key" DEST="$dest" python3 - <<'PY'
-import json, os
-key = os.environ.get("KEY", "")
-dest = os.environ["DEST"]
-if not key:
-    raise SystemExit(2)
-with open(dest, "w", encoding="utf-8") as f:
-    json.dump({"OPENAI_API_KEY": key}, f, indent=2)
-    f.write("\n")
-os.chmod(dest, 0o600)
-PY
-    return
-  fi
-  err "需要 node 或 python3 来安全写入 auth.json"
-  exit 1
+  KEY="$key" DEST="$dest" node -e '
+    const fs = require("fs");
+    const key = process.env.KEY || "";
+    if (!key) process.exit(2);
+    fs.writeFileSync(process.env.DEST, JSON.stringify({ OPENAI_API_KEY: key }, null, 2) + "\n", { mode: 0o600 });
+  '
 }
 
-write_config() {
+write_replace_config() {
   local dest="$1"
   cat > "$dest" <<EOF
 #:schema https://developers.openai.com/codex/config-schema.json
@@ -125,10 +110,80 @@ animations = true
 EOF
 }
 
+apply_keep_config() {
+  local dest="$1"
+  DEST="$dest" BASE_URL="$BASE_URL" node - <<'JS'
+const fs = require("fs");
+const dest = process.env.DEST;
+const baseUrl = process.env.BASE_URL;
+let text = fs.readFileSync(dest, "utf8");
+if (!text.endsWith("\n")) text += "\n";
+
+function esc(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function firstTableIndex(s) {
+  const m = s.match(/^\[/m);
+  return m ? m.index : s.length;
+}
+
+function upsertRootKey(s, key, valueLine) {
+  const split = firstTableIndex(s);
+  let head = s.slice(0, split);
+  const tail = s.slice(split);
+  const re = new RegExp("^(\\s*#\\s*)?" + esc(key) + "\\s*=.*$", "m");
+  if (re.test(head)) {
+    head = head.replace(re, valueLine);
+  } else {
+    if (head && !head.endsWith("\n")) head += "\n";
+    head += valueLine + "\n";
+  }
+  return head + tail;
+}
+
+function upsertTable(s, name, body) {
+  const re = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
+  const block = "[" + name + "]\n" + body + (body.endsWith("\n") ? "" : "\n");
+  if (re.test(s)) return s.replace(re, block);
+  if (!s.endsWith("\n")) s += "\n";
+  return s + "\n" + block;
+}
+
+function commentTable(s, name) {
+  const re = new RegExp("^\\[" + esc(name) + "\\][^\\n]*\\n(?:^(?!\\[).*(?:\\n|$))*", "m");
+  return s.replace(re, (m) =>
+    m.split("\n").map((l) => (l && !l.startsWith("#") ? "# " + l : l)).join("\n")
+  );
+}
+
+text = upsertRootKey(text, "model_provider", 'model_provider = "codex"');
+text = upsertRootKey(text, "forced_login_method", 'forced_login_method = "api"');
+text = commentTable(text, "model_providers.Custom");
+text = upsertTable(
+  text,
+  "model_providers.codex",
+  [
+    'name = "codex"',
+    'base_url = "' + baseUrl + '"',
+    'wire_api = "responses"',
+    "requires_openai_auth = true",
+    "supports_websockets = false",
+    "",
+  ].join("\n")
+);
+fs.writeFileSync(dest, text);
+JS
+}
+
 echo ""
 echo "=============================================="
 echo "  Code80 · Codex CLI 一键安装配置"
 echo "=============================================="
+echo ""
+warn "本脚本会改 ~/.codex/config.toml 以接入 Code80。"
+warn "已有配置会先备份。覆盖模式会丢掉 oh-my-codex / MCP / hooks 等自定义内容。"
+warn "装完若要改回 OpenAI 官方： ${RESTORE_CMD}"
 echo ""
 
 OS_NAME=$(uname -s)
@@ -192,16 +247,72 @@ info "3/6 准备 ${CODEX_HOME}"
 mkdir -p "${CODEX_HOME}"
 chmod 700 "${CODEX_HOME}" 2>/dev/null || true
 
-info "4/6 写入 config.toml（Code80 推荐配置）"
+info "4/6 处理 config.toml"
+CONFIG_MODE="${CODEX_CONFIG_MODE:-}"
+HAS_CONFIG=0
+HAS_OMX=0
 if [ -f "${CODEX_HOME}/config.toml" ]; then
+  HAS_CONFIG=1
+  if grep -qi 'oh-my-codex' "${CODEX_HOME}/config.toml" 2>/dev/null; then
+    HAS_OMX=1
+    warn "检测到 oh-my-codex。"
+  else
+    warn "检测到已有 ~/.codex/config.toml。"
+  fi
+  echo "  1) 接入 Code80，保留现有配置（oh-my-codex / MCP / hooks 等）  [推荐有自定义配置时选]"
+  echo "  2) 用 Code80 推荐模板覆盖（会先备份，可用恢复脚本还原）"
+  echo "  3) 取消"
+  if [ -z "$CONFIG_MODE" ]; then
+    if [ -r /dev/tty ]; then
+      DEFAULT_CHOICE="1"
+      prompt_tty "请选择 [1/2/3]（默认 ${DEFAULT_CHOICE}）: " CHOICE
+      CHOICE="${CHOICE:-$DEFAULT_CHOICE}"
+    else
+      CHOICE="1"
+      warn "无交互终端，默认 1：保留现有配置，只改 Code80 接入。"
+    fi
+    case "$CHOICE" in
+      1) CONFIG_MODE="keep" ;;
+      2) CONFIG_MODE="replace" ;;
+      3|q|Q|n|N) CONFIG_MODE="abort" ;;
+      *)
+        err "无效选择"
+        exit 1
+        ;;
+    esac
+  fi
+else
+  CONFIG_MODE="replace"
+fi
+
+case "$CONFIG_MODE" in
+  abort)
+    warn "已取消。未改 config.toml。"
+    exit 0
+    ;;
+  keep|replace) ;;
+  *)
+    err "CODEX_CONFIG_MODE 只能是 keep / replace / abort"
+    exit 1
+    ;;
+esac
+
+if [ "$HAS_CONFIG" -eq 1 ]; then
   BACKUP="${CODEX_HOME}/config.toml.bak.$(date +%Y%m%d_%H%M%S)"
   cp "${CODEX_HOME}/config.toml" "${BACKUP}"
+  printf '%s\n' "$BACKUP" > "${CODEX_HOME}/.code80-last-backup"
   warn "已备份原配置到 ${BACKUP}"
 fi
-write_config "${CODEX_HOME}/config.toml"
+
+if [ "$CONFIG_MODE" = "keep" ] && [ "$HAS_CONFIG" -eq 1 ]; then
+  apply_keep_config "${CODEX_HOME}/config.toml"
+  ok "已保留现有配置，并接入 Code80 provider"
+else
+  write_replace_config "${CODEX_HOME}/config.toml"
+  ok "已写入 Code80 推荐模板"
+fi
 chmod 600 "${CODEX_HOME}/config.toml" 2>/dev/null || true
-ok "模型 ${MODEL} · provider=codex · ${BASE_URL}"
-ok "requires_openai_auth=true · supports_websockets=false"
+ok "provider=codex · ${BASE_URL} · requires_openai_auth=true · supports_websockets=false"
 
 info "5/6 配置 API Key（只写入 auth.json，不会打印）"
 KEY="${CODE80_API_KEY:-${OPENAI_API_KEY:-}}"
@@ -248,9 +359,10 @@ echo ""
 echo "下一步："
 echo "  1. 彻底退出已打开的 Codex（Cmd+Q），不要只关窗口"
 echo "  2. 新开终端执行：  cd 你的项目 && codex"
-echo "  3. 用新对话测试。日常模型是 ${MODEL}"
-echo "     复杂任务 gpt-5.6-sol · 图快 gpt-5.6-luna"
-echo "     不要写 gpt-5.6 或 gpt-luna"
+echo "  3. 用新对话测试"
+echo ""
+echo "改回 OpenAI 官方配置："
+echo "  ${RESTORE_CMD}"
 echo ""
 echo "文档：${DOCS_URL}"
 echo ""
