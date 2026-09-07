@@ -1,12 +1,22 @@
 ---
-description: Codex CLI 快速开始指南：3 步手工配置，或复制提示词交给 Agent 安装并接到 Code80
+description: Codex CLI 快速开始：一键脚本、交给 Agent，或手工 3 步配置，三选一即可
 ---
 
 # Codex CLI
 
-OpenAI 官方 AI 编程助手命令行工具。最快的方式是跑一键脚本，或把[Agent 提示词](#agent-setup)复制给 Claude Code / Grok 代装。
+OpenAI 官方 AI 编程助手命令行工具。通过 Code80 接入时，下面三种方式**任选一种**，做完即可开始用，不要顺着全做一遍。
 
-## 一键安装配置
+## 选一种方式即可
+
+| 方式 | 适合谁 | 做什么 |
+|------|--------|--------|
+| [方式一：一键脚本](#方式一-一键脚本安装推荐) | 自己有终端，想最快配好 | 跑一条命令 |
+| [方式二：交给 Agent](#agent-setup) | 已经在用 Claude Code / Grok | 复制提示词让它代装 |
+| [方式三：手工配置](#方式三-手工三步配置) | 想看清楚每一步 | 自己装 CLI、写配置 |
+
+配完都要彻底退出 Codex 再用**新对话**测试。只关窗口不够。
+
+## 方式一：一键脚本安装（推荐）
 
 macOS / Linux：
 
@@ -22,69 +32,9 @@ irm https://docs.ai80.vip/codex/install.ps1 | iex
 
 脚本会安装官方 `@openai/codex`、写入 Code80 推荐配置，并向你要 **OpenAI 分组** 的 API Key（只进 `auth.json`，不打印）。分平台说明见 [安装详解](./install)。
 
-## 快速开始
+做完方式一就可以用了，不必再做方式二或方式三。
 
-只需 3 步，即可通过 Code80 平台使用 Codex CLI：
-
-### 1. 安装 CLI 工具
-
-```bash
-npm install -g @openai/codex
-```
-
-### 2. 配置 API
-
-创建配置目录和文件：
-
-```bash
-mkdir -p ~/.codex
-```
-
-编辑 `~/.codex/config.toml`：
-
-```toml
-#:schema https://developers.openai.com/codex/config-schema.json
-
-model = "gpt-5.6-terra"
-model_provider = "codex"
-model_reasoning_effort = "medium"
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
-web_search = "cached"
-forced_login_method = "api"
-
-[model_providers.codex]
-name = "codex"
-base_url = "https://code.ai80.vip"
-wire_api = "responses"
-requires_openai_auth = true
-supports_websockets = false
-```
-
-日常默认用 `gpt-5.6-terra`。复杂任务换成 `gpt-5.6-sol`，图快图省用 `gpt-5.6-luna`。不要写 `gpt-5.6` 或 `gpt-luna`。
-
-`requires_openai_auth = true` 让 0.149.0+ 继续读 `auth.json`；`supports_websockets = false` 避免每次提问先卡「正在重新连接」。完整说明见 [配置详解](./config)。
-
-编辑 `~/.codex/auth.json`：
-
-```json
-{
-  "OPENAI_API_KEY": "your-api-key"
-}
-```
-
-> 将 `your-api-key` 替换为你在 Code80 平台获取的 API Key。
-
-### 3. 开始使用
-
-```bash
-cd your-project
-codex
-```
-
-首次启动流程：选择开发环境 → 配置偏好 → 开始 AI 辅助编程。
-
-## 一键交给 Agent 安装并配置 {#agent-setup}
+## 方式二：交给 Agent 安装并配置 {#agent-setup}
 
 下面的提示词用于让另一个 Agent **协助安装官方 Codex CLI，并接到 Code80**。它不会要求 Agent 猜测、打印或提交你的 API Key，也不会改内置的 `openai` provider。
 
@@ -127,6 +77,72 @@ network_access = false
 ::: tip 复制后记得准备 Key
 Agent 找不到现有密钥时会向你要 Code80 **OpenAI 分组** 的 API Key。不要把 Key 贴进仓库、`AGENTS.md` 或聊天截图。
 :::
+
+做完方式二就可以用了，不必再跑脚本或手工改配置。
+
+## 方式三：手工三步配置
+
+已经做过方式一或方式二的人跳过本节。想自己看清每一步时，按下面做。
+
+### 1. 安装 CLI 工具
+
+```bash
+npm install -g @openai/codex
+```
+
+需要 Node.js 22+。分平台步骤见 [安装详解](./install)。
+
+### 2. 配置 API
+
+创建配置目录和文件：
+
+```bash
+mkdir -p ~/.codex
+```
+
+编辑 `~/.codex/config.toml`：
+
+```toml
+#:schema https://developers.openai.com/codex/config-schema.json
+
+model = "gpt-5.6-terra"
+model_provider = "codex"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+forced_login_method = "api"
+
+[model_providers.codex]
+name = "codex"
+base_url = "https://code.ai80.vip"
+wire_api = "responses"
+requires_openai_auth = true
+supports_websockets = false
+```
+
+日常默认用 `gpt-5.6-terra`。复杂任务换成 `gpt-5.6-sol`，图快图省用 `gpt-5.6-luna`。不要写 `gpt-5.6` 或 `gpt-luna`。
+
+`requires_openai_auth = true` 让 0.149.0+ 继续读 `auth.json`；`supports_websockets = false` 避免每次提问先卡「正在重新连接」。完整说明见 [配置详解](./config)。
+
+编辑 `~/.codex/auth.json`：
+
+```json
+{
+  "OPENAI_API_KEY": "your-api-key"
+}
+```
+
+将 `your-api-key` 替换为你在 Code80 平台获取的 **OpenAI 分组** API Key。
+
+### 3. 开始使用
+
+```bash
+cd your-project
+codex
+```
+
+首次启动流程：选择开发环境 → 配置偏好 → 开始 AI 辅助编程。
 
 ## 安全边界
 
