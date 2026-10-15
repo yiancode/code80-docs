@@ -8,4 +8,6 @@ scripts/deploy.local.conf
 *.png
 !public/grok/
 !public/grok/*.png
+!public/antigravity/
+!public/antigravity/*.png
 .idea/

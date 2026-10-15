@@ -6,7 +6,7 @@ const ogImage = `${site}/logo.png`
 export default defineConfig({
   title: 'Code80',
   titleTemplate: ':title - Code80 AI编程巴士',
-  description: 'Code80 AI编程巴士 - Claude Code、Codex CLI、Gemini CLI 配置教程、使用技巧与插件玩法',
+  description: 'Code80 AI编程巴士 - Claude Code、Codex CLI、Gemini CLI、Antigravity CLI、Grok 配置教程与使用技巧',
   cleanUrls: true,
   lastUpdated: true,
   lang: 'zh-CN',
@@ -23,7 +23,7 @@ export default defineConfig({
     ['meta', { property: 'og:locale', content: 'zh_CN' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],
     ['meta', { name: 'twitter:image', content: ogImage }],
-    ['meta', { name: 'keywords', content: 'Code80,AI编程巴士,Claude Code,Codex CLI,Gemini CLI,AI编程助手,API网关,AI编程工具配置' }]
+    ['meta', { name: 'keywords', content: 'Code80,AI编程巴士,Claude Code,Codex CLI,Gemini CLI,Antigravity CLI,agy,Grok,AI编程助手,API网关,AI编程工具配置' }]
   ],
 
   themeConfig: {
@@ -32,6 +32,7 @@ export default defineConfig({
       { text: 'Claude Code', link: '/claudecode/' },
       { text: 'Codex CLI', link: '/codex/' },
       { text: 'Gemini CLI', link: '/gemini/' },
+      { text: 'Antigravity CLI', link: '/antigravity/' },
       { text: 'Grok Build', link: '/grok/' },
       {
         text: '使用指南',
@@ -74,6 +75,7 @@ export default defineConfig({
           items: [
             { text: 'Codex CLI', link: '/codex/' },
             { text: 'Gemini CLI', link: '/gemini/' },
+            { text: 'Antigravity CLI', link: '/antigravity/' },
             { text: 'Grok Build', link: '/grok/' }
           ]
         }
@@ -95,6 +97,7 @@ export default defineConfig({
           items: [
             { text: 'Claude Code', link: '/claudecode/' },
             { text: 'Gemini CLI', link: '/gemini/' },
+            { text: 'Antigravity CLI', link: '/antigravity/' },
             { text: 'Grok Build', link: '/grok/' }
           ]
         }
@@ -116,6 +119,28 @@ export default defineConfig({
           items: [
             { text: 'Claude Code', link: '/claudecode/' },
             { text: 'Codex CLI', link: '/codex/' },
+            { text: 'Antigravity CLI', link: '/antigravity/' },
+            { text: 'Grok Build', link: '/grok/' }
+          ]
+        }
+      ],
+      '/antigravity/': [
+        {
+          text: 'Antigravity CLI',
+          items: [
+            { text: '概述与快速开始', link: '/antigravity/' },
+            { text: '安装与验证', link: '/antigravity/install' },
+            { text: '配置详解', link: '/antigravity/config' },
+            { text: '调用与交互', link: '/antigravity/usage' },
+            { text: '常见问题', link: '/antigravity/faq' }
+          ]
+        },
+        {
+          text: '其他工具',
+          items: [
+            { text: 'Claude Code', link: '/claudecode/' },
+            { text: 'Codex CLI', link: '/codex/' },
+            { text: 'Gemini CLI', link: '/gemini/' },
             { text: 'Grok Build', link: '/grok/' }
           ]
         }
@@ -135,7 +160,8 @@ export default defineConfig({
           items: [
             { text: 'Claude Code', link: '/claudecode/' },
             { text: 'Codex CLI', link: '/codex/' },
-            { text: 'Gemini CLI', link: '/gemini/' }
+            { text: 'Gemini CLI', link: '/gemini/' },
+            { text: 'Antigravity CLI', link: '/antigravity/' }
           ]
         }
       ],
